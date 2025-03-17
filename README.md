@@ -1,6 +1,7 @@
 # whatsapp-clone
-A WhatsApp-like messaging system built with Spring Boot, WebFlux, MongoDB, and RabbitMQ/Kafka.
+A WhatsApp-like messaging system built with Spring Boot, WebFlux, MongoDB and Kafka.
 The project follows a microservices architecture with REST API support and will later integrate WebSockets for real-time messaging.
+All classes are covered with Unit Tests and Integration Tests using Test Containers 
 
 - user-service/          # User authentication & management
 - message-service/       # Message handling (REST API, MongoDB)  -> Spring WebFlux
