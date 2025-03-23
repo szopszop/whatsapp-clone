@@ -24,7 +24,7 @@ A WhatsApp-like messaging system built with **Spring Boot**, **WebFlux**, **Mong
 - **Spring Boot + WebFlux**: Reactive backend.  
 - **MongoDB**: Message storage.  
 - **PostgreSQL**: User management.  
-- **RabbitMQ / Kafka**: Message queueing.  
+- **RabbitMQ**: Message queueing.  
 - **Spring Cloud Gateway**: API Gateway.  
 - **WebSockets**: Real-time messaging.  
 - **Firebase Cloud Messaging (FCM)**: Push notifications for mobile and web.  
@@ -37,7 +37,7 @@ A WhatsApp-like messaging system built with **Spring Boot**, **WebFlux**, **Mong
 
 - Real-time messaging via **WebSockets**.  
 - Push notifications via **FCM** for offline users.  
-- Scalable microservices architecture with **Kafka** for event-driven communication.  
+- Scalable microservices architecture with **RabbitMQ** for event-driven communication.  
 - Integration Testing with **Test Containers**.  
 
 ---
