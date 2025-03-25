@@ -32,7 +32,7 @@ import tracz.userservice.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(UserController.class)
-@ActiveProfiles("test")
+@ActiveProfiles("unit-test")
 class UserControllerTest {
 
     @Autowired

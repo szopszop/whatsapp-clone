@@ -30,7 +30,7 @@ jobs:
             maven-${{ runner.os }}-
 
       - name: Run unit tests
-        run: mvn test -Ptest
+        run: SPRING_PROFILES_ACTIVE=test mvn test
         working-directory: user-service
 
       - name: Upload unit test results

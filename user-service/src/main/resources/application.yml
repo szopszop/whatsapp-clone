@@ -2,6 +2,9 @@ server:
   port: 8081
 
 spring:
+  application:
+    name: user-service
+
   datasource:
     url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
     username: ${POSTGRES_USERNAME}
@@ -14,8 +17,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  application:
-    name: user-service
+  profiles:
+    active: test
+
 #  security:
 #    oauth2:
 #      resourceserver:
