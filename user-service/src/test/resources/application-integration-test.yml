@@ -1,7 +1,16 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:17-alpine:///test_db
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: create-drop
+    database: postgresql
+
+
+#docker:
+#  client:
+#    strategy=org:
+#      testcontainers:
+#        dockerclient: EnvironmentAndSystemPropertyClientProviderStrategy

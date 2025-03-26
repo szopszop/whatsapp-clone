@@ -3,6 +3,7 @@ package tracz.userservice.controller;
 import java.util.UUID;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import tracz.userservice.dto.RegisterRequest;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.service.UserService;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(ApiPaths.USER_API)
@@ -42,9 +44,30 @@ public class UserController {
 
     @PostMapping()
     public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterRequest request) {
-        UserDTO savedUser = userService.register(request);
+        /*UserDTO savedUser = userService.register(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", String.format(ApiPaths.USER_API + "/%s", savedUser.getId()));
-        return new ResponseEntity<>(savedUser, headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedUser, headers, HttpStatus.CREATED);*/
+
+        try {
+            UserDTO savedUser = userService.register(request);
+
+            // Add null check before accessing getId()
+            if (savedUser == null) {
+                log.error("User registration failed: Returned UserDTO is null");
+                return ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(null);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Location", String.format(ApiPaths.USER_API + "/%s", savedUser.getId()));
+            return new ResponseEntity<>(savedUser, headers, HttpStatus.CREATED);
+        } catch (Exception e) {
+            log.error("Error during user registration", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 }
