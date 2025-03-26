@@ -25,6 +25,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tracz.userservice.config.ApiPaths;
 import tracz.userservice.config.ExceptionMessages;
 import tracz.userservice.dto.RegisterRequest;
@@ -46,6 +47,8 @@ class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
+    private UserController userController;
+
     static final String EMAIL = "email";
     static final String TEST_EMAIL = "test@test.com";
     static final String TEST_PASSWORD = "SecurePassword123!";
@@ -65,7 +68,10 @@ class UserControllerTest {
                 .role(Role.USER)
                 .build();
         request = new RegisterRequest(TEST_EMAIL, TEST_PASSWORD);
-
+        userController = new UserController(userService);
+        mockMvc = MockMvcBuilders.standaloneSetup(userController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
