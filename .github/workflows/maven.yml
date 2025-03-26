@@ -30,7 +30,7 @@ jobs:
             maven-${{ runner.os }}-
 
       - name: Run unit tests
-        run: SPRING_PROFILES_ACTIVE=test mvn test
+        run: SPRING_PROFILES_ACTIVE=unit-test mvn test
         working-directory: user-service
 
       - name: Upload unit test results
@@ -39,3 +39,18 @@ jobs:
         with:
           name: unit-test-results
           path: user-service/target/surefire-reports/
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Run integration tests
+        run: mvn verify -DskipUnitTests=true

@@ -9,8 +9,8 @@ spring:
     database: postgresql
 
 
-#docker:
-#  client:
-#    strategy=org:
-#      testcontainers:
-#        dockerclient: EnvironmentAndSystemPropertyClientProviderStrategy
+docker:
+  client:
+    strategy=org:
+      testcontainers:
+        dockerclient: EnvironmentAndSystemPropertyClientProviderStrategy
