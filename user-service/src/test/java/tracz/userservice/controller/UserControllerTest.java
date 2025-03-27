@@ -8,10 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
@@ -22,12 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tracz.userservice.config.ApiPaths;
 import tracz.userservice.config.ExceptionMessages;
 import tracz.userservice.dto.RegisterRequest;
@@ -161,10 +156,10 @@ class UserControllerTest {
                 .thenReturn(userDTO);
 
         mockMvc.perform(post(ApiPaths.USER_API)
-                .with(jwtRequestPostProcessor)
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .with(jwtRequestPostProcessor)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.email").value(userDTO.getEmail()));
@@ -190,7 +185,16 @@ class UserControllerTest {
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.errors.email").exists());
         }
+    }
 
-
+    @Test
+    void testExistsByEmail() throws Exception {
+        when(userService.existsByEmail(any(String.class))).thenReturn(true);
+        mockMvc.perform(get(ApiPaths.USER_API_EXISTS_BY_EMAIL)
+                        .queryParam(EMAIL, TEST_EMAIL)
+                        .with(jwtRequestPostProcessor)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
     }
 }
