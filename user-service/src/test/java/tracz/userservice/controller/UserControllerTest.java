@@ -9,6 +9,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -69,9 +71,6 @@ class UserControllerTest {
                 .build();
         request = new RegisterRequest(TEST_EMAIL, TEST_PASSWORD);
         userController = new UserController(userService);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
     }
 
     @Test
@@ -123,7 +122,22 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value(ExceptionMessages.USER_NOT_FOUND))
                 .andExpect(jsonPath("$.error").value(ExceptionMessages.NOT_FOUND))
                 .andExpect(jsonPath("$.status").value(404));
+    }
 
+    @Test
+    void getUserByIdUnauthenticatedTest() throws Exception {
+        mockMvc.perform(get(ApiPaths.USER_API_BY_ID, userId))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"Realm\""));
+
+    }
+
+    @Test
+    void getUserByEmailUnauthenticatedTest() throws Exception {
+        mockMvc.perform(get(ApiPaths.USER_API_BY_EMAIL)
+                        .queryParam(EMAIL, TEST_EMAIL))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"Realm\""));
     }
 
     @Test

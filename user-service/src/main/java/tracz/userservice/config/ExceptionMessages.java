@@ -10,4 +10,8 @@ public class ExceptionMessages {
 
     public static final String NOT_FOUND = "Not Found";
     public static final String CONFLICT = "Conflict";
+    public static final String VALIDATION_FAILED = "Validation Failed";
+    public static final String ACCESS_DENIED = "Access denied";
+    public static final String FORBIDDEN = "Forbidden";
+    public static final String UNAUTHORISED = "Unauthorized";
 }
