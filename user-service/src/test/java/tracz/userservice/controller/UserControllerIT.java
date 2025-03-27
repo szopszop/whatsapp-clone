@@ -57,10 +57,17 @@ class UserControllerIT {
     @BeforeEach
     public void setup() {
         for (int i = 0; i < 10; i++) {
-            User user = User.builder().email("useremail" + i + "@email.com").password("SercurePassword123!" + i).role(Role.USER).build();
+            User user = User.builder()
+                    .email("useremail" + i + "@email.com")
+                    .password("SercurePassword123!" + i)
+                    .role(Role.USER).build();
             userRepository.save(user);
         }
-        User admin = User.builder().email("adminemail@email.com").password("SercurePassword123!").role(Role.ADMIN).build();
+        User admin = User.builder()
+                .email("adminemail@email.com")
+                .password("SercurePassword123!")
+                .role(Role.ADMIN)
+                .build();
         userRepository.save(admin);
 
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).apply(springSecurity()).build();
@@ -78,7 +85,8 @@ class UserControllerIT {
         assertThat(responseEntity.getHeaders().getLocation()).isNotNull();
         String[] locationUUID = responseEntity.getHeaders().getLocation().getPath().split("/");
         UUID savedUUID = UUID.fromString(locationUUID[locationUUID.length - 1]);
-        userRepository.findById(savedUUID).ifPresent(savedUser -> assertThat(savedUser.getEmail()).isEqualTo(TEST_EMAIL));
+        userRepository.findById(savedUUID)
+                .ifPresent(savedUser -> assertThat(savedUser.getEmail()).isEqualTo(TEST_EMAIL));
     }
 
 
