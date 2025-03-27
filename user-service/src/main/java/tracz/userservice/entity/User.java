@@ -7,11 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +24,8 @@ import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import tracz.userservice.config.validation.Email;
+import tracz.userservice.config.validation.Password;
 
 @Entity
 @Getter
@@ -36,14 +39,17 @@ public class User {
 
     @Id
     @UuidGenerator
+    @GeneratedValue(generator = "UUID")
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     @JdbcTypeCode(SqlTypes.CHAR)
     private UUID id;
 
     @Column(unique = true, nullable = false, length = 100)
+    @Size(max = 100)
     @Email
     private String email;
 
+    @Password
     @Column(nullable = false, length = 100)
     private String password;
 
@@ -51,7 +57,8 @@ public class User {
     private Role role;
 
     @Version
-    private Integer version;
+    @Column(nullable = false)
+    private Integer version = 0;
 
     @CreatedDate
     private Instant createdDate;
