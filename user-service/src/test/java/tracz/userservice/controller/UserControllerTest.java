@@ -23,9 +23,9 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tracz.commonservice.config.ExceptionMessages;
 import tracz.userservice.config.ApiPaths;
-import tracz.userservice.config.ExceptionMessages;
-import tracz.userservice.dto.RegisterRequest;
+import tracz.userservice.dto.RegistrationRequest;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.entity.Role;
 import tracz.userservice.service.UserService;
@@ -54,7 +54,7 @@ class UserControllerTest {
 
     UUID userId;
     UserDTO userDTO;
-    RegisterRequest request;
+    RegistrationRequest request;
 
     @BeforeEach
     void setUp() {
@@ -64,7 +64,7 @@ class UserControllerTest {
                 .email(TEST_EMAIL)
                 .role(Role.USER)
                 .build();
-        request = new RegisterRequest(TEST_EMAIL, TEST_PASSWORD);
+        request = new RegistrationRequest(TEST_EMAIL, TEST_PASSWORD);
         userController = new UserController(userService);
     }
 
@@ -137,7 +137,7 @@ class UserControllerTest {
 
     @Test
     void registerDuplicateEmailTest() throws Exception {
-        when(userService.register(any(RegisterRequest.class)))
+        when(userService.register(any(RegistrationRequest.class)))
                 .thenThrow(new DuplicateResourceException(ExceptionMessages.EMAIL_EXISTS));
 
         mockMvc.perform(post(ApiPaths.USER_API)
@@ -152,7 +152,7 @@ class UserControllerTest {
 
     @Test
     void registerUserTest() throws Exception {
-        when(userService.register(any(RegisterRequest.class)))
+        when(userService.register(any(RegistrationRequest.class)))
                 .thenReturn(userDTO);
 
         mockMvc.perform(post(ApiPaths.USER_API)
@@ -172,7 +172,7 @@ class UserControllerTest {
                 "invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalid@invalid.com"};
 
         for (String email : invalidEmails) {
-            RegisterRequest request = RegisterRequest.builder()
+            RegistrationRequest request = RegistrationRequest.builder()
                     .email(email)
                     .password(TEST_PASSWORD)
                     .build();

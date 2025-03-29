@@ -21,7 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import tracz.userservice.dto.RegisterRequest;
+import tracz.userservice.dto.RegistrationRequest;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.entity.Role;
 import tracz.userservice.entity.User;
@@ -77,7 +77,7 @@ class UserControllerIT {
     @Transactional
     @Test
     void shouldSaveUser() {
-        RegisterRequest request = RegisterRequest.builder().email(TEST_EMAIL).password(TEST_PASSWORD).build();
+        RegistrationRequest request = RegistrationRequest.builder().email(TEST_EMAIL).password(TEST_PASSWORD).build();
 
         ResponseEntity<UserDTO> responseEntity = userController.register(request);
 
