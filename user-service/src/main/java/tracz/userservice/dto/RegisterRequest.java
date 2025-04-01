@@ -9,7 +9,7 @@ import tracz.commonservice.config.validation.Password;
 @Setter
 @Builder
 @AllArgsConstructor
-public class RegistrationRequest {
+public class RegisterRequest {
 
     @Email
     @Size(max = 100)
