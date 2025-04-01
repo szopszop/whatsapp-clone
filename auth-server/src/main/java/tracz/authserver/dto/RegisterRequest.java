@@ -1,22 +1,18 @@
-package tracz.authservice.dto;
+package tracz.authserver.dto;
 
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import tracz.commonservice.config.validation.Email;
-import tracz.commonservice.config.validation.Password;
+import tracz.authserver.config.validation.Email;
+import tracz.authserver.config.validation.Password;
 
-@Getter
-@Setter
+@Data
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-
     @Email
     @Size(max = 100)
     private String email;
     @Password
     private String password;
-    @Password
-    private String confirmPassword;
-
 }

@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.data.domain.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tracz.commonservice.config.ExceptionMessages;
 import tracz.userservice.dto.UserDTO;
@@ -19,7 +18,6 @@ import tracz.userservice.repository.UserRepository;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder ;
     private final UserMapper userMapper;
 
     @Override

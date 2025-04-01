@@ -1,4 +1,4 @@
-package tracz.authservice.dto;
+package tracz.authserver.dto;
 
 import lombok.Data;
 

@@ -7,10 +7,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tracz.commonservice.config.ExceptionMessages;
 import tracz.userservice.config.ApiPaths;
-import tracz.userservice.dto.RegistrationRequest;
+import tracz.userservice.dto.RegisterRequest;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.entity.Role;
 import tracz.userservice.service.UserService;
@@ -54,7 +52,7 @@ class UserControllerTest {
 
     UUID userId;
     UserDTO userDTO;
-    RegistrationRequest request;
+    RegisterRequest request;
 
     @BeforeEach
     void setUp() {
@@ -64,7 +62,7 @@ class UserControllerTest {
                 .email(TEST_EMAIL)
                 .role(Role.USER)
                 .build();
-        request = new RegistrationRequest(TEST_EMAIL, TEST_PASSWORD);
+        request = new RegisterRequest(TEST_EMAIL, TEST_PASSWORD);
         userController = new UserController(userService);
     }
 
@@ -135,57 +133,7 @@ class UserControllerTest {
                 .andExpect(header().string("WWW-Authenticate", "Basic realm=\"Realm\""));
     }
 
-    @Test
-    void registerDuplicateEmailTest() throws Exception {
-        when(userService.register(any(RegistrationRequest.class)))
-                .thenThrow(new DuplicateResourceException(ExceptionMessages.EMAIL_EXISTS));
 
-        mockMvc.perform(post(ApiPaths.USER_API)
-                        .with(jwtRequestPostProcessor)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.error").value(ExceptionMessages.CONFLICT))
-                .andExpect(jsonPath("$.message").value(ExceptionMessages.EMAIL_EXISTS));
-    }
-
-    @Test
-    void registerUserTest() throws Exception {
-        when(userService.register(any(RegistrationRequest.class)))
-                .thenReturn(userDTO);
-
-        mockMvc.perform(post(ApiPaths.USER_API)
-                        .with(jwtRequestPostProcessor)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(userId.toString()))
-                .andExpect(jsonPath("$.email").value(userDTO.getEmail()));
-    }
-
-
-    @Test
-    void registerUserWithInvalidEmailTest() throws Exception {
-        String[] invalidEmails = {"invalid-email", "invalid@", "in@com", "in.@com", "i@a", "@i.com",
-                "invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinvalid@invalid.com"};
-
-        for (String email : invalidEmails) {
-            RegistrationRequest request = RegistrationRequest.builder()
-                    .email(email)
-                    .password(TEST_PASSWORD)
-                    .build();
-
-            mockMvc.perform(post(ApiPaths.USER_API)
-                            .with(jwtRequestPostProcessor)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.status").value(400))
-                    .andExpect(jsonPath("$.errors.email").exists());
-        }
-    }
 
     @Test
     void testExistsByEmail() throws Exception {

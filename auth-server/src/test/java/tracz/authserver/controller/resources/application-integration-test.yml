@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:17-alpine:///testdb
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database: postgresql
+
+
+docker:
+  client:
+    strategy=org:
+      testcontainers:
+        dockerclient: EnvironmentAndSystemPropertyClientProviderStrategy

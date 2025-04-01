@@ -1,50 +1,94 @@
 version: '3.8'
 
+networks:
+  app-network:
+    driver: bridge
+
 services:
-  postgres:
+  # Auth Server DB
+  auth-server-postgres:
     image: postgres:17-alpine
-    container_name: postgres_db
+    container_name: auth_postgres
     restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${AUTH_SERVER_DB_NAME}
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5432:5432"  # Tylko dla dev, w produkcji usuń to
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${AUTH_SERVER_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Server
+  auth-server:
+    build: ./auth-server
+    container_name: auth_server
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-server-postgres:5432/${AUTH_SERVER_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      auth-server-postgres:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
     networks:
       - app-network
 
-  user-service:
-    build: ./user-service
-    container_name: user_service
+  #Auth Service
+  auth-service:
+    build: ./auth-service
+    container_name: auth
     restart: always
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/${AUTH_SERVICE_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-    depends_on:
-      - postgres
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8081:8081"
     networks:
       - app-network
 
-  auth-service:
-    build: ./auth-service
-    container_name: auth_service
+
+  #User Service DB
+  user-service-postgres:
+    image: postgres:17-alpine
+    container_name: user_postgres
     restart: always
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/${POSTGRES_DB}
+      POSTGRES_DB: ${AUTH_SERVICE_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${USER_SERVICE_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  #User Service
+  user-service:
+    build: ./user-service
+    container_name: user_service
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-postgres:5432/${USER_SERVICE_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
     depends_on:
-      - postgres
+      - user-service-postgres
     ports:
       - "8082:8082"
     networks:
       - app-network
-
-networks:
-  app-network:
-    driver: bridge

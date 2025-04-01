@@ -1,7 +1,6 @@
 package entity;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,8 +9,8 @@ import lombok.Data;
 @Data
 public class AuthUser {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String email;

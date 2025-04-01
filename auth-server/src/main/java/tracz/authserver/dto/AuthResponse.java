@@ -1,4 +1,4 @@
-package tracz.authservice.dto;
+package tracz.authserver.dto;
 
 import lombok.*;
 
@@ -9,7 +9,4 @@ import lombok.*;
 public class AuthResponse {
     private String accessToken;
     private String refreshToken;
-    private String tokenType;
-    private String email;
-    private String role;
 }
