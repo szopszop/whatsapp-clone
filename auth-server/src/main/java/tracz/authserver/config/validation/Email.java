@@ -1,12 +1,9 @@
-package tracz.userservice.config.validation;
+package tracz.authserver.config.validation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import tracz.userservice.config.ExceptionMessages;
+import tracz.authserver.config.ExceptionMessages;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

@@ -1,4 +1,4 @@
-package tracz.userservice.config;
+package tracz.commonservice.config;
 
 public class ExceptionMessages {
     public static final String USER_NOT_FOUND = "User not found";

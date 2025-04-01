@@ -5,11 +5,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tracz.userservice.config.ApiPaths;
-import tracz.userservice.dto.RegisterRequest;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.service.UserService;
 
@@ -45,11 +43,4 @@ public class UserController {
         return userService.getUsers("email", 0, 25);
     }
 
-    @PostMapping()
-    public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterRequest request) {
-        UserDTO savedUser = userService.register(request);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", String.format(ApiPaths.USER_API + "/%s", savedUser.getId()));
-        return new ResponseEntity<>(savedUser, headers, HttpStatus.CREATED);
-    }
 }
