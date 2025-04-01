@@ -4,6 +4,30 @@ A WhatsApp-like messaging system built with **Spring Boot**, **WebFlux**, **Mong
 
 ---
 
+
+
+Key Features
+
+Secure Authentication: JWT-based authentication with role-based access control (RBAC).
+
+Scalable Authorization: Separate Auth Service for token validation and role verification.
+
+Optimized Performance: Redis caching for fast token validation and blacklist storage.
+
+Blacklist Mechanism: Revoked tokens stored in Redis to prevent unauthorized access.
+
+Microservices Architecture: API Gateway routes traffic, ensuring security and scalability.
+
+Token Refreshing: Secure refresh token mechanism with optional caching.
+
+Database & Cache Integration: PostgreSQL for persistent storage, Redis for real-time operations.
+
+Security Best Practices: Enforced token expiration, secure storage, and access control.
+
+Technology Stack: API Gateway (Nginx/Kong), Auth Server (Node.js/Spring Boot), Redis, PostgreSQL.
+
+
+
 ## **Services**
 
 - **`user-service/`**: User authentication & management (PostgreSQL).  
