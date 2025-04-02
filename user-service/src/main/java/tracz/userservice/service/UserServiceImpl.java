@@ -6,11 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import tracz.commonservice.config.ExceptionMessages;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.entity.User;
 import tracz.userservice.mapper.UserMapper;
 import tracz.userservice.repository.UserRepository;
+import tracz.userservice.config.ExceptionMessages;
 
 @Slf4j
 @Service

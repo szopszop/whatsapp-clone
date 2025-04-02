@@ -21,12 +21,12 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import tracz.commonservice.config.ExceptionMessages;
 import tracz.userservice.config.ApiPaths;
 import tracz.userservice.dto.RegisterRequest;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.entity.Role;
 import tracz.userservice.service.UserService;
+import tracz.userservice.config.ExceptionMessages;
 
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(UserController.class)

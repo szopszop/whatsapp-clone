@@ -17,19 +17,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          issuer-uri: ${ISSUER_URI}
-
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: full
-  common-service:
-    url: ${COMMON_SERVICE_URL:http://common-service:8083}

@@ -1,10 +1,10 @@
-package tracz.commonservice.config.validation;
+package tracz.userservice.config.validation;
 
 
 import java.lang.annotation.*;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import tracz.commonservice.config.ExceptionMessages;
+import tracz.userservice.config.ExceptionMessages;
 
 @Constraint(validatedBy = PasswordValidator.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
