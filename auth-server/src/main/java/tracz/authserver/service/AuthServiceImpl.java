@@ -7,15 +7,18 @@ import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
+import tracz.authserver.config.ExceptionMessages;
 import tracz.authserver.dto.*;
 import tracz.authserver.entity.AuthUser;
 import tracz.authserver.mapper.AuthUserMapper;
@@ -38,8 +41,7 @@ public class AuthServiceImpl implements AuthUserService {
     @Transactional
     public AuthUserDTO register(RegisterRequest request) {
         if (authUserRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already in use");
-        }
+            throw new DuplicateResourceException(ExceptionMessages.EMAIL_EXISTS);        }
         log.info("Registering user with email: {}", request.getEmail());
         AuthUser authUser = AuthUser.builder()
                 .email(request.getEmail())
@@ -67,7 +69,7 @@ public class AuthServiceImpl implements AuthUserService {
             String email = jwt.getSubject();
 
             AuthUser authUser = authUserRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException(ExceptionMessages.USER_NOT_FOUND));
 
             Collection<? extends GrantedAuthority> authorities = authUser.getRoles().stream()
                     .map(SimpleGrantedAuthority::new)
