@@ -11,8 +11,6 @@ import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import tracz.commonservice.config.validation.Email;
-import tracz.commonservice.config.validation.Password;
 
 @Entity
 @Getter
@@ -33,10 +31,8 @@ public class User {
 
     @Column(unique = true, nullable = false, length = 100)
     @Size(max = 100)
-    @Email
     private String email;
 
-    @Password
     @Column(nullable = false, length = 100)
     private String password;
 

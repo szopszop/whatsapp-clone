@@ -1,12 +1,9 @@
 package tracz.authserver.config;
 
 public final class ApiPaths {
-    public static final String USER_API = "/api/v1/user";
-    public static final String USER_BY_ID = "/{id}";
-    public static final String USER_BY_EMAIL = "/by-email";
-    public static final String USER_EXISTS_BY_EMAIL = "/exists-by-email";
+    public static final String API_AUTH = "/api/v1/auth";
+    public static final String API_AUTH_LOGIN = "/api/v1/auth/login";
+    public static final String API_AUTH_REGISTER = "/api/v1/auth/register";
+    public static final String API_AUTH_REFRESH = "/api/v1/auth/refresh";
 
-    public static final String USER_API_BY_ID = USER_API + USER_BY_ID;
-    public static final String USER_API_BY_EMAIL = USER_API + USER_BY_EMAIL;
-    public static final String USER_API_EXISTS_BY_EMAIL = USER_API + USER_EXISTS_BY_EMAIL;
-}
+ }

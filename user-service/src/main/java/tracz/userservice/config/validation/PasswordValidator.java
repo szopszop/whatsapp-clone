@@ -1,4 +1,4 @@
-package tracz.commonservice.config.validation;
+package tracz.userservice.config.validation;
 
 import java.util.regex.Pattern;
 import jakarta.validation.ConstraintValidator;

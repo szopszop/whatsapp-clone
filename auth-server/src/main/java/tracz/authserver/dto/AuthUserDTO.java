@@ -7,6 +7,7 @@ import tracz.authserver.config.validation.Email;
 import tracz.authserver.config.validation.Password;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthUserDTO {

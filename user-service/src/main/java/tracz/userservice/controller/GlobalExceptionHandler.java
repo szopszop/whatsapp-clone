@@ -1,4 +1,4 @@
-package tracz.commonservice.controller;
+package tracz.userservice.controller;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import tracz.commonservice.config.ExceptionMessages;
+import tracz.userservice.config.ExceptionMessages;
 
 @Slf4j
 @ControllerAdvice

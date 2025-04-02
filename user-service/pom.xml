@@ -77,6 +77,14 @@
             <optional>true</optional>
         </dependency>
 
+
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+
+
         <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -118,12 +126,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Common -->
-        <dependency>
-            <groupId>tracz</groupId>
-            <artifactId>common-service</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
 
     <build>
