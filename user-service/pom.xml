@@ -118,12 +118,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Common -->
-        <dependency>
-            <groupId>tracz</groupId>
-            <artifactId>common-service</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
 
     <build>
