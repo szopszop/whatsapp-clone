@@ -3,7 +3,10 @@ package tracz.authserver.controller;
 import java.time.Instant;
 import java.util.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import org.springframework.security.core.AuthenticationException;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,8 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import tracz.authserver.config.*;
-import tracz.authserver.dto.AuthUserDTO;
-import tracz.authserver.dto.RegisterRequest;
+import tracz.authserver.dto.*;
 import tracz.authserver.service.AuthUserService;
 
 @Import(SecurityConfig.class)
@@ -142,4 +144,109 @@ class AuthUserControllerTest {
         }
     }
 
+    @Test
+    void registerUserWithInvalidPasswordTest() throws Exception {
+        String[] invalidPasswords = {"invalid-password", "1111111111111", "Password123", "Password!!!"};
+
+        for (String password : invalidPasswords) {
+            RegisterRequest request = RegisterRequest.builder()
+                    .email(TEST_EMAIL)
+                    .password(password)
+                    .build();
+
+            when(authUserService.register(any(RegisterRequest.class)))
+                    .thenThrow(new ValidationException(ExceptionMessages.PASSWORD_CONSTRAINT));
+
+            mockMvc.perform(post(ApiPaths.API_AUTH_REGISTER)
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.message").value(ExceptionMessages.PASSWORD_CONSTRAINT));
+        }
+    }
+
+    @Test
+    void authenticateUserTest() throws Exception {
+        AuthRequest request = AuthRequest.builder()
+                .email(TEST_EMAIL)
+                .password(TEST_PASSWORD)
+                .build();
+
+        AuthResponse response = AuthResponse.builder()
+                .accessToken("test-access-token")
+                .refreshToken("test-refresh-token")
+                .build();
+
+        when(authUserService.authenticate(any(AuthRequest.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(post(ApiPaths.API_AUTH_LOGIN)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value(response.getAccessToken()))
+                .andExpect(jsonPath("$.refreshToken").value(response.getRefreshToken()));
+    }
+
+    @Test
+    void authenticateUserWithInvalidCredentialTest() throws Exception {
+        AuthRequest request = AuthRequest.builder()
+                .email(TEST_EMAIL)
+                .password("wrong-password")
+                .build();
+
+        when(authUserService.authenticate(any(AuthRequest.class)))
+                .thenThrow(new AuthenticationException(ExceptionMessages.BAD_CREDENTIALS) {});
+
+        mockMvc.perform(post(ApiPaths.API_AUTH_LOGIN)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value(ExceptionMessages.BAD_CREDENTIALS));
+    }
+
+    @Test
+    void refreshTokenTest() throws Exception {
+        RefreshTokenRequest refreshRequest = RefreshTokenRequest.builder()
+                .refreshToken("refresh-token")
+                .build();
+
+        AuthResponse response = AuthResponse.builder()
+                .accessToken("test-access-token")
+                .refreshToken("test-refresh-token")
+                .build();
+
+        when(authUserService.refreshToken(refreshRequest)).thenReturn(response);
+
+        mockMvc.perform(post(ApiPaths.API_AUTH_REFRESH)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value(response.getAccessToken()))
+                .andExpect(jsonPath("$.refreshToken").value(response.getRefreshToken()));
+    }
+
+    @Test
+    void refreshTokenWithInvalidRefreshTokenTest() throws Exception {
+        RefreshTokenRequest  refreshRequest = RefreshTokenRequest.builder()
+                .refreshToken("invalid-token")
+                .build();
+
+        when(authUserService.refreshToken(refreshRequest))
+                .thenThrow(new AuthenticationException(ExceptionMessages.INVALID_TOKEN) {});
+
+        mockMvc.perform(post(ApiPaths.API_AUTH_REFRESH)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value(ExceptionMessages.INVALID_TOKEN));
+    }
 }

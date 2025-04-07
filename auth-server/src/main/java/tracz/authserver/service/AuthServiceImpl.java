@@ -10,8 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,7 +80,8 @@ public class AuthServiceImpl implements AuthUserService {
             return generateTokens(authentication);
 
         } catch (JwtException e) {
-            throw new RuntimeException("Invalid refresh token", e);
+            throw new AuthenticationException(ExceptionMessages.INVALID_TOKEN, e) {
+            };
         }
     }
 
