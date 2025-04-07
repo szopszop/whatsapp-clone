@@ -40,7 +40,7 @@ import tracz.authserver.service.AuthUserService;
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(AuthUserController.class)
 @ActiveProfiles("unit-test")
-class AuthUserControllerTest {
+public class AuthUserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -63,8 +63,8 @@ class AuthUserControllerTest {
     private AuthUserController authUserController;
 
     static final String EMAIL = "email";
-    static final String TEST_EMAIL = "test@test.com";
-    static final String TEST_PASSWORD = "PasswordPassword123!";
+    public static final String TEST_EMAIL = "test@test.com";
+    public static final String TEST_PASSWORD = "PasswordPassword123!";
     static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRequestPostProcessor =
             jwt().jwt(jwt -> jwt.notBefore(Instant.now().minusSeconds(5)));
 

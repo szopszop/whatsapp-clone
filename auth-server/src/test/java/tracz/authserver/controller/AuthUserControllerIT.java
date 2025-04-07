@@ -10,8 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static tracz.authserver.controller.AuthUserControllerTest.TEST_EMAIL;
 import static tracz.authserver.controller.AuthUserControllerTest.TEST_PASSWORD;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -28,8 +27,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import tracz.authserver.config.ApiPaths;
 import tracz.authserver.config.ExceptionMessages;
 import tracz.authserver.dto.*;
-import tracz.authserver.entity.AuthUser;
-import tracz.authserver.mapper.AuthUserMapper;
 import tracz.authserver.repository.AuthUserRepository;
 
 @SpringBootTest
@@ -48,9 +45,6 @@ class AuthUserControllerIT {
     AuthUserRepository authUserRepository;
 
     @Autowired
-    AuthUserMapper authUserMapper;
-
-    @Autowired
     ObjectMapper objectMapper;
 
     @Autowired
@@ -60,23 +54,12 @@ class AuthUserControllerIT {
 
     @BeforeEach
     public void setup() {
-        for (int i = 0; i < 10; i++) {
-            AuthUser user = AuthUser.builder()
-                    .email("userEmail" + i + "@email.com")
-                    .password("SecurePassword123!" + i)
-                    .roles(new HashSet<>(List.of("ROLE_USER")))
-                    .build();
-            authUserRepository.save(user);
-        }
-        AuthUser admin = AuthUser.builder()
-                .email("adminemail@email.com")
-                .password("SecurePassword123!")
-                .roles(new HashSet<>(List.of("ROLE_ADMIN")))
-                .build();
-        authUserRepository.save(admin);
-
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).apply(springSecurity()).build();
+    }
 
+    @AfterEach
+    void tearDown() {
+        authUserRepository.deleteAll();
     }
 
     @Transactional
