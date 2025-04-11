@@ -1,6 +1,0 @@
-env:
-  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-  POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-  ISSUER_URI: ${{ secrets.ISSUER_URI }}
-  JWT_SECRET: ${{secrets.JWT_SECRET }}

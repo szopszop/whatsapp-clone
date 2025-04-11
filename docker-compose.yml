@@ -48,7 +48,7 @@ services:
     container_name: auth
     restart: always
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/${AUTH_SERVICE_DB_NAME}
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/${AUTH_SERVICE_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}

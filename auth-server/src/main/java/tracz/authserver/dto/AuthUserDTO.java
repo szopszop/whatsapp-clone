@@ -15,8 +15,5 @@ public class AuthUserDTO {
 
     @Email
     private String email;
-
-    @Password
-    private String password;
     private Set<String> roles;
 }
