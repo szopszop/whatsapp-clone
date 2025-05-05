@@ -1,74 +1,51 @@
 # WhatsApp Clone
 
-A WhatsApp-like messaging system built with **Spring Boot**, **WebFlux**, **MongoDB**, and **Kafka**. The project follows a microservices architecture with **REST API** support and integrates **WebSockets** for real-time messaging and **Firebase Cloud Messaging (FCM)** for push notifications. All classes are covered with **Unit Tests** and **Integration Tests** using **Test Containers**.
+A WhatsApp-style chat system using Spring Boot, WebFlux, RabbitMQ, and MongoDB. It supports JWT-based authentication, WebSockets for real-time messaging, and push notifications via Firebase (FCM).
+Covered with **Unit Tests** and **Integration Tests** using **Test Containers**.
+
+![image](https://github.com/user-attachments/assets/16088909-61ab-44c1-85f1-f323f50d79fb)
+
 
 ---
 
+## Microservices Overview
 
-
-Key Features
-
-Secure Authentication: JWT-based authentication with role-based access control (RBAC).
-
-Scalable Authorization: Separate Auth Service for token validation and role verification.
-
-Optimized Performance: Redis caching for fast token validation and blacklist storage.
-
-Blacklist Mechanism: Revoked tokens stored in Redis to prevent unauthorized access.
-
-Microservices Architecture: API Gateway routes traffic, ensuring security and scalability.
-
-Token Refreshing: Secure refresh token mechanism with optional caching.
-
-Database & Cache Integration: PostgreSQL for persistent storage, Redis for real-time operations.
-
-Security Best Practices: Enforced token expiration, secure storage, and access control.
-
-Technology Stack: API Gateway (Nginx/Kong), Auth Server (Node.js/Spring Boot), Redis, PostgreSQL.
-
-
-
-## **Services**
-
-- **`user-service/`**: User authentication & management (PostgreSQL).  
-- **`message-service/`**: Message handling (REST API, MongoDB) → Spring WebFlux + WebSockets for real-time messaging.  
-- **`notification-service/`**: Push notifications using **Firebase Cloud Messaging (FCM)**.  
-- **`queue-service/`**: Message queueing (Kafka/RabbitMQ).  
+| Service               | Purpose                                 | Tech Stack                        | Communication    |
+|-----------------------|-----------------------------------------|------------------------------------|------------------|
+| `api-gateway`         | Central entry point & routing           | Spring Cloud Gateway (Reactive), Redis    | REST (Reactive)  |
+| `auth-server`         | Auth + JWT + OAuth2 + Blacklist         | PostgreSQL, Redis                  | REST (Blocking)  |
+| `user-service`        | User CRUD + profile info                | PostgreSQL, Redis                  | REST (Blocking)  |
+| `message-service`     | Messaging logic, WebSocket sessions     | MongoDB, WebSockets                | WS + REST (Reactive) |
+| `notification-service`| Push notifications (FCM)                | Firebase Cloud Messaging           | REST (Reactive)  |
+| `queue-service`       | Message broker                          | RabbitMQ                           | AMQP (Async)     |
 
 ---
 
-## **Deployment**
+## Communication Flow
 
-- **`docker-compose.yml`**: Containerized services (Spring Boot apps, MongoDB, PostgreSQL, Kafka, Redis for WebSocket session management).  
-
----
-
-## **Technologies & Tools**
-
-- **Spring Boot + WebFlux**: Reactive backend.  
-- **MongoDB**: Message storage.  
-- **PostgreSQL**: User management.  
-- **RabbitMQ**: Message queueing.  
-- **Spring Cloud Gateway**: API Gateway.  
-- **WebSockets**: Real-time messaging.  
-- **Firebase Cloud Messaging (FCM)**: Push notifications for mobile and web.  
-- **Docker & Docker Compose**: Containerized services.  
-- **Lombok, Reactor, Spring Security**: Utility and security.  
-
----
-
-## **Key Features**
-
-- Real-time messaging via **WebSockets**.  
-- Push notifications via **FCM** for offline users.  
-- Scalable microservices architecture with **RabbitMQ** for event-driven communication.  
-- Integration Testing with **Test Containers**.  
+| From → To                      | Type        | Protocol           | Purpose                                 |
+|-------------------------------|-------------|--------------------|-----------------------------------------|
+| API Gateway → All             | REST        | HTTP (Reactive)    | Routing external client requests        |
+| Api Gateway ↔ Redis           | Internal    | Redis              | Token validate / revoke               |
+| Auth Server ↔ User Service    | REST        | HTTP (Blocking)    | User validation     |
+| Auth Server ↔ Redis           | Internal    | Redis              | Token caching / blacklist               |
+| User Service → PostgreSQL     | Internal    | JDBC               | Persistent user data                    |
+| User Service → Redis          | Internal    | Redis              | Cache user profile info                 |
+| Message Service ↔ MongoDB     | Internal    | Mongo Driver       | Store and fetch messages                |
+| Message Service → Queue Service   | Async       | AMQP (RabbitMQ)    | Message publishing                      |
+| Queue Service → Notification Service  | Async       | AMQP (RabbitMQ)    | Deliver notification trigger            |
+| Message Service → Notification Service| REST        | HTTP (Reactive)    | Push FCM notifications (optional path)  |
+| Notification Service → FCM        | External    | HTTPS              | Send push notification to device        |
+| Message Service ↔ WebSocket       | Realtime    | WS                 | Real-time messaging                     |
 
 ---
 
-## **How to Run**
+## Key Features
 
-### **1. Clone the Repository**
-```bash
-git clone https://github.com/your-username/whatsapp-clone.git
-cd whatsapp-clone
+- JWT Authentication with role-based access (RBAC)  
+- Reactive architecture using Spring WebFlux  
+- Secure token handling + Redis-backed blacklist  
+- FCM push notifications for offline users  
+- WebSockets for live chat experience  
+- Test Containers for integration testing  
+- RabbitMQ for event-driven comms between services  
