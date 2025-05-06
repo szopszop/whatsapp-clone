@@ -1,4 +1,4 @@
-package com.eazybytes.configserver;
+package tracz.configserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

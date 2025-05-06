@@ -2,8 +2,10 @@ server:
   port: 9000
 
 spring:
+  application:
+    name: auth-server
   datasource:
-    url: jdbc:postgresql://auth_postgres:5432/authserverdb
+    url: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -34,14 +36,46 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  config:
+    import: "optional:configserver:http://config-server:8060/"
 
-    show-sql: true
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    shutdown:
+      access: unrestricted
+
+  info:
+    env:
+      enabled: true
+
+eureka:
+  instance:
+    preferIpAddress: true # dla localhost
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://eureka-server:8070/eureka/
+
+# for Eureka dashboard
+info:
+  app:
+    name: "auth-server"
+    description: "Auth server app"
+    version: "1.0.0"
 
 logging:
   level:
-    org.springframework.security: trace
+    org.springframework.security: debug
 
 

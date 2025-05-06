@@ -11,7 +11,7 @@
 	<groupId>tracz</groupId>
 	<artifactId>config-server</artifactId>
 	<version>1.0.0</version>
-	<name>configserver</name>
+	<name>config-server</name>
 	<description>Config Server for Whatsapp-clone microservices</description>
 	<url/>
 	<licenses>
