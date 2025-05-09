@@ -1,8 +1,14 @@
 spring:
   application:
-    name: "eureka-server"
+    name: "eurekaserver"
   config:
-    import: "optional:config-server:http://localhost:8060/"
+    import: "optional:configserver:http://localhost:8060/"
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lowerCaseServiceId: true
 
 management:
   endpoints:

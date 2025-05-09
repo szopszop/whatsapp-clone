@@ -19,9 +19,9 @@ services:
       file: common-config.yml
       service: microservice-db-config
 
-  config-server:
-    image: "szopszop/config-server"
-    container_name: config-server
+  configserver:
+    image: "szopszop/configserver"
+    container_name: configserver
     ports:
       - "8060:8060"
     healthcheck:
@@ -34,13 +34,13 @@ services:
       file: common-config.yml
       service: microservice-base-config
       
-  eureka-server:
-    image: "szopszop/eureka-server"
-    container_name: eureka-server
+  eurekaserver:
+    image: "szopszop/eurekaserver"
+    container_name: eurekaserver
     ports:
       - "8070:8070"
     depends_on:
-      config-server:
+      configserver:
         condition: service_healthy
     healthcheck:
       test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
@@ -52,7 +52,7 @@ services:
       file: common-config.yml
       service: microservice-configserver-config
     environment:
-      SPRING_APPLICATION_NAME: "eureka-server"
+      SPRING_APPLICATION_NAME: "eurekaserver"
 
   auth-server:
     image: "szopszop/auth-server"
@@ -64,13 +64,15 @@ services:
     depends_on:
       auth-server-db:
         condition: service_healthy
-      config-server:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
         condition: service_healthy
     ports:
       - "9000:9000"
     extends:
       file: common-config.yml
-      service: microservice-configserver-config
+      service: microservice-eureka-config
 
   user-service:
     image: "szopszop/user-service"
@@ -81,13 +83,15 @@ services:
     depends_on:
       user-service-db:
         condition: service_healthy
-      config-server:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
         condition: service_healthy
     ports:
       - "8080:8080"
     extends:
       file: common-config.yml
-      service: microservice-configserver-config
+      service: microservice-eureka-config
 
 
 networks:

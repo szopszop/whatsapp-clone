@@ -4,11 +4,6 @@ server:
 spring:
   application:
     name: auth-server
-  datasource:
-    url: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-    driver-class-name: org.postgresql.Driver
   security:
     user:
       name: user
@@ -41,10 +36,11 @@ spring:
       hibernate:
         format_sql: true
   config:
-    import: "optional:configserver:http://config-server:8060/"
+    import: "optional:configserver:http://configserver:8060/"
 
 
 
+#Acuator#Acuator 
 management:
   endpoints:
     web:
@@ -65,7 +61,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://eureka-server:8070/eureka/
+      defaultZone: http://eurekaserver:8070/eureka/
 
 # for Eureka dashboard
 info:

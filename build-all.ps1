@@ -1,4 +1,4 @@
-$services = @("auth-server", "config-server", "eureka-server", "user-service")
+$services = @("auth-server", "configserver", "eurekaserver", "user-service")
 
 foreach ($s in $services) {
     $imageFullName = "szopszop/$s"

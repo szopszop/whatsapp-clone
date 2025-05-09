@@ -9,9 +9,9 @@
 		<relativePath/>
 	</parent>
 	<groupId>tracz</groupId>
-	<artifactId>config-server</artifactId>
+	<artifactId>configserver</artifactId>
 	<version>1.0.0</version>
-	<name>config-server</name>
+	<name>configserver</name>
 	<description>Config Server for Whatsapp-clone microservices</description>
 	<url/>
 	<licenses>
