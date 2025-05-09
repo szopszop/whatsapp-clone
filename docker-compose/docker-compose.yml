@@ -64,12 +64,16 @@ services:
     depends_on:
       auth-server-db:
         condition: service_healthy
-      configserver:
-        condition: service_healthy
       eurekaserver:
         condition: service_healthy
     ports:
       - "9000:9000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-eureka-config
@@ -83,12 +87,32 @@ services:
     depends_on:
       user-service-db:
         condition: service_healthy
-      configserver:
-        condition: service_healthy
       eurekaserver:
         condition: service_healthy
     ports:
       - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
+
+  gatewayserver:
+    image: "szopszop/gatewayserver"
+    container_name: gatewayserver
+    environment:
+      SPRING_APPLICATION_NAME: gatewayserver
+    depends_on:
+      auth-server:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    ports:
+      - "8050:8050"
     extends:
       file: common-config.yml
       service: microservice-eureka-config

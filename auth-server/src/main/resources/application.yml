@@ -40,16 +40,12 @@ spring:
 
 
 
-#Acuator#Acuator 
+#Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
-  endpoint:
-    shutdown:
-      access: unrestricted
-
+        include: "health,info"
   info:
     env:
       enabled: true

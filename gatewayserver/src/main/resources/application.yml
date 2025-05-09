@@ -1,11 +1,16 @@
 spring:
   application:
-    name: gateway-sever
+    name: gatewayserver
   config:
     import: "optional:configserver:http://localhost:8060/"
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
 
-
-#Acuator
+#Actuator
 management:
   endpoints:
     web:
@@ -24,5 +29,7 @@ info:
 
 logging:
   level:
-    org.springframework.security: debug
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.webflux.handler: DEBUG
+    org.springframework.web.reactive.DispatcherHandler: DEBUG
 
