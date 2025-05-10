@@ -29,7 +29,6 @@ info:
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.webflux.handler: DEBUG
-    org.springframework.web.reactive.DispatcherHandler: DEBUG
+    tracz:
+      gatewayserver: debug
 

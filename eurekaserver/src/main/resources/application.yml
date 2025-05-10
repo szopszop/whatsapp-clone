@@ -24,3 +24,8 @@ management:
     health:
       probes:
         enabled: true
+
+logging:
+  level:
+    tracz:
+      eurekaserver: debug

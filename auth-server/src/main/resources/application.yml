@@ -38,17 +38,21 @@ spring:
   config:
     import: "optional:configserver:http://configserver:8060/"
 
-
-
 #Actuator
 management:
   endpoints:
     web:
       exposure:
         include: "health,info"
-  info:
-    env:
+  health:
+    readiness-state:
       enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    health:
+      probes:
+        enabled: true
 
 eureka:
   instance:
@@ -68,6 +72,6 @@ info:
 
 logging:
   level:
-    org.springframework.security: debug
-
+    tracz:
+      authserver: debug
 

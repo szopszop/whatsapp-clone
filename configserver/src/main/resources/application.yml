@@ -13,12 +13,12 @@ spring:
           clone-on-start: true
           force-pull: true
 
-#Acuator #Acuator 
+#Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "health,info"
   health:
     readiness-state:
       enabled: true
@@ -31,3 +31,8 @@ management:
 
 server:
   port: 8060
+
+logging:
+  level:
+    tracz:
+      configserver: debug
