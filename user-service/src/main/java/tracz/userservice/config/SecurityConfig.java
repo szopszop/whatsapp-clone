@@ -19,6 +19,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests(authorizeRequests -> {
+            authorizeRequests.requestMatchers("/actuator/**").permitAll();
                     authorizeRequests.requestMatchers(HttpMethod.POST, ApiPaths.USER_API).permitAll();
                     authorizeRequests.anyRequest().authenticated();
                 })

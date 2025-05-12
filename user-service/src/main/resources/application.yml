@@ -1,15 +1,11 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   application:
     name: user-service
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+  config:
+    import: "optional:configserver:http://configserver:8060/"
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,3 +13,43 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+
+#Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+
+eureka:
+  instance:
+    preferIpAddress: true # dla localhost
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://eurekaserver:8070/eureka/
+
+# for Eureka dashboard
+info:
+  app:
+    name: "user-service"
+    description: "User service app"
+    version: "1.0.0"
+
+logging:
+  level:
+    tracz:
+      userservice: debug
+
