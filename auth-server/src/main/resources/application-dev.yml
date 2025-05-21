@@ -4,6 +4,21 @@ server:
 spring:
   application:
     name: auth-server
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5430/${AUTH_SERVER_DB_NAME}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   security:
     user:
       name: user
@@ -28,15 +43,24 @@ spring:
                 - "openid"
                 - "profile"
             require-authorization-consent: true
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  config:
-    import: "optional:configserver:http://configserver:8060/"
+
+
+eureka:
+  instance:
+    preferIpAddress: true # dla localhost
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+
+#Eureka dashboard
+info:
+  app:
+    name: "auth-server"
+    description: "Auth server app"
+    version: "1.0.0"
 
 #Actuator
 management:
@@ -62,21 +86,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-eureka:
-  instance:
-    preferIpAddress: true # dla localhost
-  client:
-    fetchRegistry: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://eurekaserver:8070/eureka/
-
-# for Eureka dashboard
-info:
-  app:
-    name: "auth-server"
-    description: "Auth server app"
-    version: "1.0.0"
 
 logging:
   level:

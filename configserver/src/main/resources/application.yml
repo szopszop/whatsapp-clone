@@ -18,7 +18,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info"
+        include: "health,info,httptrace,prometheus"
   health:
     readiness-state:
       enabled: true
@@ -28,11 +28,15 @@ management:
     health:
       probes:
         enabled: true
-
+  metrics:
+    tags:
+      application: ${spring.application.name}
 server:
   port: 8060
 
 logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
     tracz:
-      configserver: debug
+      configserver: DEBUG

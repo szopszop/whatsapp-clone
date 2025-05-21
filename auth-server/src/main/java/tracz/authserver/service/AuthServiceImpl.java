@@ -31,7 +31,6 @@ public class AuthServiceImpl implements AuthUserService {
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final AuthUserMapper authUserMapper;
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
     //private final UserClient
@@ -48,7 +47,7 @@ public class AuthServiceImpl implements AuthUserService {
                 .roles(new HashSet<>(List.of("ROLE_USER")))
                 .build();
 
-        AuthUserDTO savedDTO = authUserMapper.authUserToDto(authUserRepository.saveAndFlush(authUser));
+        AuthUserDTO savedDTO = AuthUserMapper.authUserToDto(authUserRepository.saveAndFlush(authUser));
         log.info("Registered user with email: {}", savedDTO.getEmail());
         return savedDTO;
     }

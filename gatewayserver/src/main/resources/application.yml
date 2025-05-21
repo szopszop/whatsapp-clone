@@ -8,17 +8,31 @@ spring:
       discovery:
         locator:
           enabled: false
-          lower-case-service-id: true
+          lowerCaseServiceId: true
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 10s
+  data:
+    redis:
+      connect-timeout: 2s
+      host: localhost
+      port: 6379
+      timeout: 1s
 
-#Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "health,info,httptrace,prometheus"
+  endpoint:
+    gateway:
+      access: unrestricted
   info:
     env:
       enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 # for Eureka dashboard
 info:
@@ -31,4 +45,6 @@ logging:
   level:
     tracz:
       gatewayserver: debug
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 

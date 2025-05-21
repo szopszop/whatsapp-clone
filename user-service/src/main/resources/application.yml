@@ -8,7 +8,7 @@ spring:
     import: "optional:configserver:http://configserver:8060/"
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -20,7 +20,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info"
+        include: "health,info,httptrace,prometheus"
   health:
     readiness-state:
       enabled: true
@@ -30,7 +30,12 @@ management:
     health:
       probes:
         enabled: true
-
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 eureka:
   instance:
