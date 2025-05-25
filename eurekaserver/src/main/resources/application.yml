@@ -2,7 +2,7 @@ spring:
   application:
     name: "eurekaserver"
   config:
-    import: "optional:configserver:http://localhost:8060/"
+    import: "optional:configserver:http://configserver:8060/"
   cloud:
     gateway:
       discovery:
@@ -23,6 +23,9 @@ management:
       exposure:
         include: health,info,metrics,prometheus
   endpoint:
+    health:
+      probes:
+        enabled: true
     metrics:
       access: read_only
     prometheus:
@@ -35,8 +38,8 @@ management:
       application: ${spring.application.name}
 
 logging:
-  pattern:
-    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
     tracz:
       eurekaserver: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

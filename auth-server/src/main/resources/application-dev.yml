@@ -46,8 +46,6 @@ spring:
 
 
 eureka:
-  instance:
-    preferIpAddress: true # dla localhost
   client:
     fetchRegistry: true
     registerWithEureka: true
@@ -74,6 +72,9 @@ management:
       exposure:
         include: health,info,metrics,prometheus
   endpoint:
+    health:
+      probes:
+        enabled: true
     metrics:
       access: read_only
     prometheus:
@@ -90,4 +91,5 @@ logging:
   level:
     tracz:
       authserver: debug
-
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

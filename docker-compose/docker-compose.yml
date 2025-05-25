@@ -1,5 +1,8 @@
 services:
   redis:
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
     image: redis
     ports:
       - "6379:6379"
@@ -7,31 +10,31 @@ services:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       timeout: 10s
       retries: 10
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
 
   auth-server-db:
+    extends:
+      file: common-config.yml
+      service: microservice-db-config
     container_name: auth-server-db
     environment:
       POSTGRES_DB: ${AUTH_SERVER_DB_NAME}
     ports:
       - "5432:5432"
+
+  user-service-db:
     extends:
       file: common-config.yml
       service: microservice-db-config
-
-  user-service-db:
     container_name: user-service-db
     environment:
       POSTGRES_DB: ${USER_SERVICE_DB_NAME}
     ports:
       - "5433:5432"
-    extends:
-      file: common-config.yml
-      service: microservice-db-config
 
   configserver:
+    extends:
+      file: common-config.yml
+      service: microservice-base-config
     image: "szopszop/configserver"
     container_name: configserver
     ports:
@@ -42,11 +45,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
+    environment:
+      OTEL_SERVICE_NAME: "configserver"
       
   eurekaserver:
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
     image: "szopszop/eurekaserver"
     container_name: eurekaserver
     ports:
@@ -60,19 +65,16 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
-    extends:
-      file: common-config.yml
-      service: microservice-configserver-config
     environment:
       SPRING_APPLICATION_NAME: "eurekaserver"
+      OTEL_SERVICE_NAME: "eurekaserver"
 
   auth-server:
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
     image: "szopszop/auth-server"
     container_name: auth-server
-    environment:
-      SPRING_APPLICATION_NAME: auth-server
-      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
-      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       auth-server-db:
         condition: service_healthy
@@ -86,16 +88,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    environment:
+      SPRING_APPLICATION_NAME: auth-server
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      OTEL_SERVICE_NAME: auth-server
+
+
+
+  user-service:
     extends:
       file: common-config.yml
       service: microservice-eureka-config
-
-  user-service:
     image: "szopszop/user-service"
     container_name: user-service
-    environment:
-      SPRING_APPLICATION_NAME: user-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/${USER_SERVICE_DB_NAME}
     depends_on:
       user-service-db:
         condition: service_healthy
@@ -109,19 +115,17 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    environment:
+      SPRING_APPLICATION_NAME: user-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/${USER_SERVICE_DB_NAME}
+      OTEL_SERVICE_NAME: user-service
+
+  gatewayserver:
     extends:
       file: common-config.yml
       service: microservice-eureka-config
-
-  gatewayserver:
     image: "szopszop/gatewayserver"
     container_name: gatewayserver
-    environment:
-      SPRING_APPLICATION_NAME: gatewayserver
-      SPRING_DATA_REDIS_CONNECT-TIMEOUT: 2s
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-      SPRING_DATA_REDIS_TIMEOUT: 1s
     depends_on:
       auth-server:
         condition: service_healthy
@@ -131,12 +135,17 @@ services:
         condition: service_healthy
     ports:
       - "8050:8050"
-    extends:
-      file: common-config.yml
-      service: microservice-eureka-config
+    environment:
+      SPRING_APPLICATION_NAME: gatewayserver
+      SPRING_DATA_REDIS_CONNECT-TIMEOUT: 2s
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_TIMEOUT: 1s
+      OTEL_SERVICE_NAME: gatewayserver
 
 
-###############################################
+
+  ###############################################
 # Observability
 
   read:
