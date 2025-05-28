@@ -2,7 +2,7 @@ spring:
   application:
     name: "eurekaserver"
   config:
-    import: "optional:configserver:http://localhost:8060/"
+    import: "optional:configserver:http://configserver:8060/"
   cloud:
     gateway:
       discovery:
@@ -10,22 +10,36 @@ spring:
           enabled: false
           lowerCaseServiceId: true
 
+
+#Actuator
 management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
   health:
     readiness-state:
       enabled: true
     liveness-state:
       enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 logging:
   level:
     tracz:
-      eurekaserver: debug
+      eurekaserver: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

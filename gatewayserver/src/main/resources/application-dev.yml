@@ -2,7 +2,7 @@ spring:
   application:
     name: gatewayserver
   config:
-    import: "optional:configserver:http://configserver:8060/"
+    import: "optional:configserver:http://localhost:8060/"
   cloud:
     gateway:
       discovery:

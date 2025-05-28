@@ -1,11 +1,23 @@
 package tracz.userservice.mapper;
 
-import org.mapstruct.Mapper;
 import tracz.userservice.dto.UserDTO;
 import tracz.userservice.entity.User;
 
-@Mapper
-public interface UserMapper {
-    User dtoToUser(UserDTO dto);
-    UserDTO userToDto(User user);
+public class UserMapper {
+
+    public static User dtoToUser(UserDTO dto) {
+        return User.builder()
+                .email(dto.getEmail())
+                .role(dto.getRole())
+                .build();
+    }
+
+
+    public static UserDTO userToDto(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
+    }
 }

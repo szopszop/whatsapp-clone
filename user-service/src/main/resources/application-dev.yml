@@ -5,7 +5,13 @@ spring:
   application:
     name: user-service
   config:
-    import: "optional:configserver:http://configserver:8060/"
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5430/${USER_SERVICE_DB_NAME}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: create
@@ -13,6 +19,21 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+
+#Eureka dashboard
+info:
+  app:
+    name: "user-service"
+    description: "User service app (Development Profile)"
+    version: "1.0.0-DEV"
 
 
 #Actuator
@@ -41,19 +62,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-eureka:
-  client:
-    fetchRegistry: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://eurekaserver:8070/eureka/
-
-#Eureka dashboard
-info:
-  app:
-    name: "user-service"
-    description: "User service app"
-    version: "1.0.0"
 
 logging:
   level:

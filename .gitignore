@@ -34,4 +34,5 @@ build/
 .DS_Store
 
 ### Env ###
-docker-compose/.env
+/docker-compose/.data/
+/.env

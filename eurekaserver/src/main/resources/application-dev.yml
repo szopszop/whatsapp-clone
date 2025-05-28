@@ -1,20 +1,15 @@
-server:
-  port: 8060
-
 spring:
   application:
-    name: configserver
-  profiles:
-    active: git
+    name: "eurekaserver"
+  config:
+    import: "optional:configserver:http://localhost:8060/"
   cloud:
-    config:
-      server:
-        git:
-          uri: "https://github.com/szopszop/whatsapp-clone-config.git"
-          default-label: main
-          timeout: 5
-          clone-on-start: true
-          force-pull: true
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lowerCaseServiceId: true
+
 
 #Actuator
 management:
@@ -32,9 +27,9 @@ management:
       probes:
         enabled: true
     metrics:
-      access: unrestricted
+      access: read_only
     prometheus:
-      access: unrestricted
+      access: read_only
   info:
     env:
       enabled: true
@@ -42,11 +37,9 @@ management:
     tags:
       application: ${spring.application.name}
 
-
-
 logging:
   level:
     tracz:
-      configserver: DEBUG
+      eurekaserver: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

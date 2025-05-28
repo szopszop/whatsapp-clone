@@ -1,5 +1,6 @@
 package tracz.userservice.service;
 
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,20 +19,19 @@ import tracz.userservice.config.ExceptionMessages;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
     @Override
     public UserDTO findById(UUID id) {
-        return userRepository.findById(id)
-                .map(userMapper::userToDto)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.USER_NOT_FOUND));
+        return UserMapper.userToDto(user);
     }
 
     @Override
     public UserDTO findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(userMapper::userToDto)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.USER_NOT_FOUND));
+        return UserMapper.userToDto(user);
     }
 
     @Override
@@ -49,14 +49,12 @@ public class UserServiceImpl implements UserService {
 
         PageRequest pageRequest = PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.ASC, "email"));
 
-        Page<User> userPage;
-        if (email != null && !email.trim().isEmpty()) {
-            userPage = userRepository.findByEmailContainingIgnoreCase(email, pageRequest);
-        } else {
-            userPage = userRepository.findAll(pageRequest);
-        }
+        Page<User> userPage = Optional.ofNullable(email)
+                .filter(e -> !e.trim().isEmpty())
+                .map(e -> userRepository.findByEmailContainingIgnoreCase(e, pageRequest))
+                .orElseGet(() -> userRepository.findAll(pageRequest));
 
-        return userPage.map(userMapper::userToDto);
+        return userPage.map(UserMapper::userToDto);
     }
 
 }
