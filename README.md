@@ -6,6 +6,9 @@ Covered with **Unit Tests** and **Integration Tests** using **Test Containers**.
 ![image](https://github.com/user-attachments/assets/16088909-61ab-44c1-85f1-f323f50d79fb)
 
 
+Configuration managed from external repository:
+https://github.com/szopszop/whatsapp-clone-config
+
 ---
 
 ## Microservices Overview
