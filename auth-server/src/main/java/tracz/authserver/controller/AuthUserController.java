@@ -18,10 +18,11 @@ public class AuthUserController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthUserDTO> register(@RequestBody RegisterRequest request) {
-        log.info("Register request: {}", request);
+        log.debug("Register request started with email: {}", request.getEmail());
         AuthUserDTO authUserDTO = authUserService.register(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", String.format("/api/v1/auth/%s", authUserDTO.getId()));
+        log.debug("Register request finished with email: {}", request.getEmail());
         return new ResponseEntity<>(authUserDTO, headers, HttpStatus.CREATED);
     }
 

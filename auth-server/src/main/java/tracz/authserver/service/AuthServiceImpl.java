@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.DuplicateResourceException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.*;
@@ -22,6 +23,7 @@ import tracz.authserver.dto.*;
 import tracz.authserver.entity.AuthUser;
 import tracz.authserver.mapper.AuthUserMapper;
 import tracz.authserver.repository.AuthUserRepository;
+import tracz.authserver.service.client.UserFeignClient;
 
 @Slf4j
 @Service
@@ -33,22 +35,32 @@ public class AuthServiceImpl implements AuthUserService {
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
-    //private final UserClient
+    private final UserFeignClient userFeignClient;
 
 
     @Transactional
     public AuthUserDTO register(RegisterRequest request) {
         if (authUserRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException(ExceptionMessages.EMAIL_EXISTS);        }
-        log.info("Registering user with email: {}", request.getEmail());
+        log.debug("Registering user with email: {}", request.getEmail());
         AuthUser authUser = AuthUser.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(new HashSet<>(List.of("ROLE_USER")))
                 .build();
-
+        AuthUser savedAuthUser = authUserRepository.saveAndFlush(authUser);
+        UserRegisterDTO userRegisterDTO = UserRegisterDTO.builder()
+                .email(savedAuthUser.getEmail())
+                .roles(savedAuthUser.getRoles())
+                .build();
+        ResponseEntity<UserResponseDTO> userResponseDTO = userFeignClient.register(userRegisterDTO);
+        if (!userResponseDTO.getStatusCode().is2xxSuccessful()) {
+           log.error("Error while registering user with email: {}", request.getEmail());
+        } else {
+            log.debug("Registered user with email: {}", request.getEmail());
+        }
         AuthUserDTO savedDTO = AuthUserMapper.authUserToDto(authUserRepository.saveAndFlush(authUser));
-        log.info("Registered user with email: {}", savedDTO.getEmail());
+        log.debug("Registered user with email: {}", savedDTO.getEmail());
         return savedDTO;
     }
 
