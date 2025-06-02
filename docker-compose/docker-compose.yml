@@ -4,8 +4,6 @@ services:
       file: common-config.yml
       service: network-deploy-service
     image: redis
-    ports:
-      - "6379:6379"
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       timeout: 10s
@@ -18,8 +16,6 @@ services:
     container_name: auth-server-db
     environment:
       POSTGRES_DB: ${AUTH_SERVER_DB_NAME}
-    ports:
-      - "5432:5432"
 
   user-service-db:
     extends:
@@ -28,8 +24,6 @@ services:
     container_name: user-service-db
     environment:
       POSTGRES_DB: ${USER_SERVICE_DB_NAME}
-    ports:
-      - "5433:5432"
 
   configserver:
     extends:
@@ -37,8 +31,6 @@ services:
       service: microservice-base-config
     image: "szopszop/configserver"
     container_name: configserver
-    ports:
-      - "8060:8060"
     healthcheck:
       test: "curl --fail --silent localhost:8060/actuator/health/readiness | grep UP || exit 1"
       interval: 10s
@@ -54,8 +46,6 @@ services:
       service: microservice-configserver-config
     image: "szopszop/eurekaserver"
     container_name: eurekaserver
-    ports:
-      - "8070:8070"
     depends_on:
       configserver:
         condition: service_healthy
@@ -107,8 +97,6 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
-    ports:
-      - "8080:8080"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 10s
@@ -151,10 +139,6 @@ services:
   read:
     image: grafana/loki:3.1.2
     command: "-config.file=/etc/loki/config.yaml -target=read"
-    ports:
-      - 3101:3100
-      - 7946
-      - 9095
     volumes:
       - ./observability/loki/loki-config.yaml:/etc/loki/config.yaml
     depends_on:
@@ -172,10 +156,6 @@ services:
   write:
     image: grafana/loki:3.1.2
     command: "-config.file=/etc/loki/config.yaml -target=write"
-    ports:
-      - "3102:3100"
-      - "7946"
-      - "9095"
     volumes:
       - ./observability/loki/loki-config.yaml:/etc/loki/config.yaml
     healthcheck:
@@ -194,8 +174,6 @@ services:
       - ./observability/alloy/alloy-local-config.yaml:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    ports:
-      - "12345:12345"
     depends_on:
       - gateway
     extends:
@@ -216,8 +194,6 @@ services:
       - MINIO_ROOT_PASSWORD=supersecret
       - MINIO_PROMETHEUS_AUTH_TYPE=public
       - MINIO_UPDATE=off
-    ports:
-      - "9000"
     volumes:
       - ./.data/minio:/data
     healthcheck:
@@ -244,9 +220,6 @@ services:
     image: grafana/tempo:2.6.1
     container_name: tempo
     command: -config.file /etc/tempo-config.yml
-    ports:
-      - "3110:3100"
-      - "4318:4318"
     volumes:
       - ./observability/tempo/tempo.yml:/etc/tempo-config.yml
     extends:
@@ -283,9 +256,6 @@ services:
     image: grafana/loki:3.1.2
     volumes:
       - ./observability/loki/loki-config.yaml:/etc/loki/config.yaml
-    ports:
-      - "3100"
-      - "7946"
     command: "-config.file=/etc/loki/config.yaml -target=backend -legacy-read-mode=false"
     depends_on:
       - gateway
@@ -362,7 +332,6 @@ services:
     extends:
       file: common-config.yml
       service: network-deploy-service
-
 
 
 networks:
