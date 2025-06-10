@@ -11,27 +11,26 @@ import tracz.authserver.service.AuthUserService;
 
 @Slf4j
 @RestController
-@RequestMapping(ApiPaths.API_AUTH)
 @RequiredArgsConstructor
 public class AuthUserController {
     private final AuthUserService authUserService;
 
-    @PostMapping("/register")
+    @PostMapping(ApiPaths.REGISTER)
     public ResponseEntity<AuthUserDTO> register(@RequestBody RegisterRequest request) {
         log.info("Register request: {}", request);
         AuthUserDTO authUserDTO = authUserService.register(request);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", String.format("/api/v1/auth/%s", authUserDTO.getId()));
+        headers.add(HttpHeaders.LOCATION, ApiPaths.REGISTER + "/" + authUserDTO.getId());
         return new ResponseEntity<>(authUserDTO, headers, HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
+    @PostMapping(ApiPaths.LOGIN)
     public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest request) {
         AuthResponse authResponse = authUserService.authenticate(request);
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/refresh")
+    @PostMapping(ApiPaths.REFRESH)
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
         AuthResponse authResponse = authUserService.refreshToken(request);
         return new ResponseEntity<>(authResponse, HttpStatus.OK);

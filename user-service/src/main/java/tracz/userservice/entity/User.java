@@ -1,7 +1,7 @@
 package tracz.userservice.entity;
 
 import java.time.Instant;
-import java.util.UUID;
+import java.util.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -20,32 +20,22 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Builder
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class User extends BaseEntity {
 
-    @Id
-    @UuidGenerator
-    @GeneratedValue(generator = "UUID")
-    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
-    @JdbcTypeCode(SqlTypes.CHAR)
-    private UUID id;
+    @Column(nullable = false, unique = true)
+    private UUID authServerUserId;
 
     @Column(unique = true, nullable = false, length = 100)
     @Size(max = 100)
     private String email;
 
-    @Column(nullable = false, length = 100)
-    private String password;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role_name")
+    @Builder.Default
+    private Set<String> roles = new HashSet<>();
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private String firstName;
+    private String lastName;
 
-    @Version
-    @Column(nullable = false)
-    private Integer version = 0;
-
-    @CreatedDate
-    private Instant createdDate;
-
-    @LastModifiedDate
-    private Instant updateDate;
 }

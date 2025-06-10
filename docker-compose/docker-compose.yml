@@ -1,5 +1,5 @@
 services:
-  redis:
+  gateway-redis:
     extends:
       file: common-config.yml
       service: network-deploy-service
@@ -97,6 +97,8 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+      auth-server:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 10s
@@ -119,14 +121,14 @@ services:
         condition: service_healthy
       user-service:
         condition: service_healthy
-      redis:
+      gateway-redis:
         condition: service_healthy
     ports:
       - "8050:8050"
     environment:
       SPRING_APPLICATION_NAME: gatewayserver
       SPRING_DATA_REDIS_CONNECT-TIMEOUT: 2s
-      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_HOST: gateway-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_DATA_REDIS_TIMEOUT: 1s
       OTEL_SERVICE_NAME: gatewayserver

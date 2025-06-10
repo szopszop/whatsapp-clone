@@ -1,23 +1,34 @@
 package tracz.userservice.mapper;
 
-import tracz.userservice.dto.UserDTO;
+import tracz.userservice.dto.*;
 import tracz.userservice.entity.User;
+import java.util.Collections;
 
 public class UserMapper {
 
-    public static User dtoToUser(UserDTO dto) {
+    public static User dtoToUser(UserCreationRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
         return User.builder()
-                .email(dto.getEmail())
-                .role(dto.getRole())
+                .authServerUserId(dto.authUserId())
+                .email(dto.email())
+                .roles(dto.roles() != null ? dto.roles() : Collections.emptySet())
                 .build();
     }
 
-
-    public static UserDTO userToDto(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+    public static UserResponseDTO userToDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new UserResponseDTO(
+                user.getId(),
+                user.getAuthServerUserId(),
+                user.getEmail(),
+                user.getRoles(),
+                user.getCreatedAt(),
+                user.getFirstName(),
+                user.getLastName()
+        );
     }
 }

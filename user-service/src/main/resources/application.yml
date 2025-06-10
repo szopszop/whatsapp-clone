@@ -13,6 +13,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:8090/"
+
 
 
 #Actuator
@@ -58,6 +64,6 @@ info:
 logging:
   level:
     tracz:
-      userservice: debug
+      userservice: ERROR
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

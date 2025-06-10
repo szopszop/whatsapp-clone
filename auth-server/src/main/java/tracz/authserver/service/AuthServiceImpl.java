@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.errors.DuplicateResourceException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.*;
@@ -20,8 +21,13 @@ import org.springframework.stereotype.Service;
 import tracz.authserver.config.ExceptionMessages;
 import tracz.authserver.dto.*;
 import tracz.authserver.entity.AuthUser;
+import tracz.authserver.entity.Role;
+import tracz.authserver.exception.ServiceUnavailableException;
+import tracz.authserver.exception.UserAlreadyExistsException;
 import tracz.authserver.mapper.AuthUserMapper;
 import tracz.authserver.repository.AuthUserRepository;
+import tracz.authserver.repository.RoleRepository;
+import tracz.authserver.service.client.UserServiceFeignClient;
 
 @Slf4j
 @Service
@@ -29,27 +35,61 @@ import tracz.authserver.repository.AuthUserRepository;
 public class AuthServiceImpl implements AuthUserService {
 
     private final AuthUserRepository authUserRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
-    //private final UserClient
-
+    private final UserServiceFeignClient userServiceFeignClient;
 
     @Transactional
     public AuthUserDTO register(RegisterRequest request) {
         if (authUserRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException(ExceptionMessages.EMAIL_EXISTS);        }
+            throw new UserAlreadyExistsException("Email " + request.getEmail() + " already exists.");
+        }
         log.info("Registering user with email: {}", request.getEmail());
         AuthUser authUser = AuthUser.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .roles(new HashSet<>(List.of("ROLE_USER")))
                 .build();
+        Role userRole = roleRepository.findByName("ROLE_USER")
+                .orElseGet(() -> {
+                    Role newRole = Role.builder().name("ROLE_USER").build();
+                    return roleRepository.save(newRole);
+                });
+        authUser.setRoles(Set.of(userRole));
 
-        AuthUserDTO savedDTO = AuthUserMapper.authUserToDto(authUserRepository.saveAndFlush(authUser));
-        log.info("Registered user with email: {}", savedDTO.getEmail());
-        return savedDTO;
+        AuthUser savedUser = authUserRepository.save(authUser);
+        log.info("User with email {} registered successfully in auth-server. ID: {}", savedUser.getEmail(), savedUser.getId());
+
+        provisionUserInUserService(savedUser);
+        return AuthUserMapper.authUserToDto(savedUser);
+    }
+
+    private void provisionUserInUserService(AuthUser authUser) {
+        UserProvisionRequestDTO provisionRequestDTO = new UserProvisionRequestDTO(
+                authUser.getId(),
+                authUser.getEmail(),
+                authUser.getRoles().stream().map(Role::getName).collect(Collectors.toSet())
+        );
+
+        log.info("Attempting to provision user {} in user-service via Feign Client.", authUser.getEmail());
+
+        try {
+            ResponseEntity<Void> responseEntity = userServiceFeignClient.provisionUser(provisionRequestDTO);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                log.info("User {} provisioned successfully in user-service. Status: {}",
+                        authUser.getEmail(), responseEntity.getStatusCode());
+            } else {
+                log.error("Failed to provision user {} in user-service (Feign response not 2xx). Status: {}",
+                        authUser.getEmail(), responseEntity.getStatusCode());
+                throw new ServiceUnavailableException("Failed to provision user in user-service. Status: " + responseEntity.getStatusCode());
+            }
+        } catch (Exception e) {
+            log.error("Error during user provisioning call for user {} to user-service (Feing Exception or Fallback issue): {}",
+                    authUser.getEmail(), e.getMessage(), e);
+            throw new ServiceUnavailableException("User provisioning failed for " + authUser.getEmail() + " due to: " + e.getMessage(), e);
+        }
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -70,8 +110,8 @@ public class AuthServiceImpl implements AuthUserService {
                     .orElseThrow(() -> new UsernameNotFoundException(ExceptionMessages.USER_NOT_FOUND));
 
             Collection<? extends GrantedAuthority> authorities = authUser.getRoles().stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
+                    .map(role -> new SimpleGrantedAuthority(role.getName()))
+                    .collect(Collectors.toSet());
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     email, null, authorities);

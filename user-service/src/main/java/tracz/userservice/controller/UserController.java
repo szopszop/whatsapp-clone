@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tracz.userservice.config.ApiPaths;
-import tracz.userservice.dto.UserDTO;
+import tracz.userservice.dto.UserResponseDTO;
 import tracz.userservice.service.UserService;
 
 @Slf4j
@@ -21,13 +21,13 @@ public class UserController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping(ApiPaths.USER_BY_ID)
-    public UserDTO getUserById(@PathVariable("id") UUID id) {
+    public UserResponseDTO getUserById(@PathVariable("id") UUID id) {
         return userService.findById(id);
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/by-email")
-    public UserDTO getUserByEmail(@RequestParam("email") @Valid String email) {
+    public UserResponseDTO getUserByEmail(@RequestParam("email") @Valid String email) {
         return userService.findByEmail(email);
     }
 
@@ -39,7 +39,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public Page<UserDTO> getAllUsers() {
+    public Page<UserResponseDTO> getAllUsers() {
         return userService.getUsers("email", 0, 25);
     }
 
