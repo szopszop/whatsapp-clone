@@ -8,6 +8,16 @@ services:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       timeout: 10s
       retries: 10
+  auth-server-redis:
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+    image: redis
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      timeout: 10s
+      retries: 10
+
 
   auth-server-db:
     extends:

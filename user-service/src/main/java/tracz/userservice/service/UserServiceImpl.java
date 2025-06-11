@@ -11,6 +11,7 @@ import tracz.userservice.dto.UserCreationRequestDTO;
 import tracz.userservice.dto.UserResponseDTO;
 import tracz.userservice.entity.User;
 import tracz.userservice.exception.ResourceNotFoundException;
+import tracz.userservice.exception.UserAlreadyExistsException;
 import tracz.userservice.mapper.UserMapper;
 import tracz.userservice.repository.UserRepository;
 import tracz.userservice.config.ExceptionMessages;
@@ -66,6 +67,7 @@ public class UserServiceImpl implements UserService {
                 creationRequest.email(), creationRequest.authUserId());
         if (existsByEmail(creationRequest.email())) {
             log.warn("User {} already exists in DB", creationRequest.email());
+            throw new UserAlreadyExistsException("User with email " + creationRequest.email() + " already exists in DB");
         }
         if (userRepository.existsByAuthServerUserId(creationRequest.authUserId())) {
             log.warn("User {} with authServerId {} already exists in DB ",

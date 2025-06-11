@@ -58,7 +58,7 @@ public class SecurityConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
-    @Value("${spring.security.oauth2.authorizationserver.client.auth-server-internal.client-secret}")
+    @Value("${auth-server.internal.client-secret}")
     private String authServerInternalSecret;
 
 

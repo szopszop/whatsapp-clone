@@ -12,11 +12,9 @@ public class RoleMapper {
     }
 
     public static Role dtoToRole(RoleDTO dto) {
-        Role role = Role.builder()
+        return Role.builder()
                 .name(dto.getName())
                 .build();
-        role.setId(dto.getId());
-        return role;
 
     }
 }
