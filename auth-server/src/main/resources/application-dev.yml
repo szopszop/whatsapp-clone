@@ -15,11 +15,16 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
   security:
     oauth2:
       resourceserver:
@@ -36,6 +41,10 @@ spring:
 auth-server:
   internal:
     client-secret: ${AUTH_SERVER_INTERNAL_SECRET}
+  jwk:
+    keystore-path: "classpath:jwk.jks"
+    keystore-password: ${KEYSTORE_PASSWORD}
+    key-alias: "jwk-key"
 
 resilience4j.circuitbreaker:
   configs:

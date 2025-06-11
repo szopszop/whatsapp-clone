@@ -7,10 +7,13 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -21,7 +24,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -39,8 +41,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.*;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -137,64 +138,34 @@ public class SecurityConfig {
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
-        RegisteredClient angularPkceClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("angular-ui")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .redirectUri("http://localhost:4200/callback")
-                .postLogoutRedirectUri("http://localhost:4200/")
-                .scope(OidcScopes.OPENID)
-                .scope(OidcScopes.PROFILE)
-                .scope(OidcScopes.EMAIL)
-                .scope("user.read")
-                .clientSettings(ClientSettings.builder().requireProofKey(true).build())
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofMinutes(15))
-                        .refreshTokenTimeToLive(Duration.ofHours(8))
-                        .reuseRefreshTokens(false)
-                        .build())
-                .build();
+    public JWKSource<SecurityContext> jwkSource(
+            @Value("${auth-server.jwk.keystore-path}") String keystorePath,
+            @Value("${auth-server.jwk.keystore-password}") String keystorePassword,
+            @Value("${auth-server.jwk.key-alias}") String keyAlias) {
+        try {
+            var keyStore = KeyStore.getInstance("JKS");
+            var resource = new ClassPathResource(keystorePath.replace("classpath:", ""));
 
-        RegisteredClient authServerInternalClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("auth-server-internal")
-                .clientSecret(passwordEncoder.encode(authServerInternalSecret))
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .scope("internal.user.read")
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofMinutes(60))
-                        .build())
-                .build();
+            try (var inputStream = resource.getInputStream()) {
+                keyStore.load(inputStream, keystorePassword.toCharArray());
+            }
 
-        return new InMemoryRegisteredClientRepository(angularPkceClient, authServerInternalClient);
+            var rsaKey = RSAKey.load(keyStore, keyAlias, keystorePassword.toCharArray());
+            var jwkSet = new JWKSet(rsaKey);
+            return new ImmutableJWKSet<>(jwkSet);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to load JWK from keystore", ex);
+        }
     }
+
+
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource() {
-        KeyPair keyPair = generateRsaKey();
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        RSAKey rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString())
-                .build();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return new ImmutableJWKSet<>(jwkSet);
+    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
+        return new JdbcRegisteredClientRepository(jdbcTemplate);
     }
 
-    private static KeyPair generateRsaKey() {
-        KeyPair keyPair;
-        try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            keyPair = keyPairGenerator.generateKeyPair();
-        } catch (Exception ex) {
-            throw new IllegalStateException("Failed to generate RSA key pair", ex);
-        }
-        return keyPair;
-    }
+
 
     @Bean
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
