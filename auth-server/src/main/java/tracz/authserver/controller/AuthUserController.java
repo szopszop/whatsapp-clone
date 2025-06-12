@@ -112,9 +112,7 @@ public class AuthUserController {
                 .body(buildVersion);
     }
 
-    @Operation(
-            summary = "Get Java version", description = "Get Java version"
-    )
+    @Operation(summary = "Get Java version", description = "Get Java version")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200", description = "Java version sent",
@@ -126,13 +124,18 @@ public class AuthUserController {
     )
     @RateLimiter(name = "getJavaVersion")
     @GetMapping("/java-version")
-    @Cacheable("java-version")
     public ResponseEntity<String> getJavaVersion() {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(environment.getProperty("JAVA_HOME"));
     }
 
+    @Operation(summary = "User logout", description = "Blacklists the refresh token to prevent further use.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    @PostMapping(ApiPaths.LOGOUT)
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         authUserService.logout(request);
         return ResponseEntity
