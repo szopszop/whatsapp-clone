@@ -8,22 +8,82 @@ spring:
     import: "optional:configserver:http://localhost:8060/"
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    clean-disabled: false
+    out-of-order: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth-server:8090/
+  cache:
+    type: redis
+    cache-names:
+      - buckets
+    redis:
+      time-to-live: 600000
+
+
+auth-server:
+  internal:
+    client-secret: ${AUTH_SERVER_INTERNAL_SECRET}
+  jwk:
+    keystore-path: "classpath:jwk.jks"
+    keystore-password: ${KEYSTORE_PASSWORD}
+    key-alias: "jwk-key"
+
 
 resilience4j.circuitbreaker:
-  instances:
-    userServiceProvision:
-      registerHealthIndicator: true
-      slidingWindowType: COUNT_BASED
+  configs:
+    default:
       slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 2
       failureRateThreshold: 50
-      waitDurationInOpenState: 5000
-      permittedNumberOfCallsInHalfOpenState: 3
-      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 10000
+
+resilience4j.retry:
+  configs:
+    default:
+      maxAttempts: 3
+      waitDuration: 500
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - java.util.concurrent.TimeoutException
+
+resilience4j.ratelimiter:
+  configs:
+    default:
+      timeoutDuration: 1000
+      limitRefreshPeriod: 1000
+      limitForPeriod: 2
+
+
+#Eureka dashboard
+info:
+  app:
+    name: "auth-server"
+    description: "Auth server app"
+    version: "1.0.0"
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
 
 #Actuator
 management:
@@ -51,19 +111,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-eureka:
-  client:
-    fetchRegistry: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://eurekaserver:8070/eureka/
-
-# for Eureka dashboard
-info:
-  app:
-    name: "auth-server"
-    description: "Auth server app"
-    version: "1.0.0"
 
 logging:
   level:
@@ -72,3 +119,10 @@ logging:
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
+
+#OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
