@@ -1,10 +1,8 @@
 package tracz.authserver.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import jakarta.validation.constraints.NotEmpty;
 
-@Data
-@Builder
-public class RefreshTokenRequest {
-    private String refreshToken;
-}
+public record RefreshTokenRequest (
+    @NotEmpty
+    String refreshToken
+){}

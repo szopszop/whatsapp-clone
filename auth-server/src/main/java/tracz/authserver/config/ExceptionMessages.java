@@ -12,8 +12,11 @@ public class ExceptionMessages {
 
     public static final String NOT_FOUND = "Not Found";
     public static final String CONFLICT = "Conflict";
-    public static final String VALIDATION_FAILED = "Validation Failed";
     public static final String ACCESS_DENIED = "Access denied";
-    public static final String FORBIDDEN = "Forbidden";
-    public static final String UNAUTHORISED = "Unauthorized";
+
+    public static final String VALIDATION_FAILED = "Validation Failed";
+    public static final String UNAUTHORIZED_MESSAGE = "Authentication required to access this resource.";
+    public static final String FORBIDDEN_MESSAGE = "You do not have permission to access this resource.";
+    public static final String INTERNAL_ERROR = "An unexpected internal server error occurred.";
+    public static final String LIMIT_EXCEEDED = "Rate limit exceeded. Please try again later.";
 }

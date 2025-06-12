@@ -1,7 +1,5 @@
 package tracz.userservice.controller;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,10 +11,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import tracz.userservice.entity.Role;
 import tracz.userservice.entity.User;
-import tracz.userservice.mapper.UserMapper;
 import tracz.userservice.repository.UserRepository;
+import java.util.HashSet;
+import java.util.List;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @SpringBootTest
 @Testcontainers
@@ -34,12 +33,6 @@ class UserControllerIT {
     UserRepository userRepository;
 
     @Autowired
-    UserMapper userMapper;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
     WebApplicationContext wac;
 
     MockMvc mockMvc;
@@ -49,14 +42,12 @@ class UserControllerIT {
         for (int i = 0; i < 10; i++) {
             User user = User.builder()
                     .email("useremail" + i + "@email.com")
-                    .password("SercurePassword123!" + i)
-                    .role(Role.USER).build();
+                    .roles(new HashSet<>(List.of("USER"))).build();
             userRepository.save(user);
         }
         User admin = User.builder()
                 .email("adminemail@email.com")
-                .password("SercurePassword123!")
-                .role(Role.ADMIN)
+                .roles(new HashSet<>(List.of("USER")))
                 .build();
         userRepository.save(admin);
 

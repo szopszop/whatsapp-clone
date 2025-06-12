@@ -1,16 +1,12 @@
 package tracz.authserver.dto;
 
-import lombok.*;
-import tracz.authserver.config.validation.Email;
-import tracz.authserver.config.validation.Password;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthRequest {
-    @Email
-    String email;
-    @Password
-    String password;
+public record AuthRequest(
+        @Email
+        String email,
+        @NotBlank(message = "Password cannot be blank")
+        String password
+) {
 }

@@ -5,7 +5,7 @@ spring:
   application:
     name: auth-server
   config:
-    import: "optional:configserver:http://configserver:8060/"
+    import: "optional:configserver:http://localhost:8060/"
   jpa:
     hibernate:
       ddl-auto: create
@@ -13,31 +13,17 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  security:
-    user:
-      name: user
-      password: password
-    oauth2:
-      authorizationserver:
-        client:
-          oidc-client:
-            registration:
-              client-id: "oidc-client"
-              client-secret: "{noop}secret"
-              client-authentication-methods:
-                - "client_secret_basic"
-              authorization-grant-types:
-                - "authorization_code"
-                - "refresh_token"
-              redirect-uris:
-                - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
-              post-logout-redirect-uris:
-                - "http://127.0.0.1:8080/"
-              scopes:
-                - "openid"
-                - "profile"
-            require-authorization-consent: true
 
+resilience4j.circuitbreaker:
+  instances:
+    userServiceProvision:
+      registerHealthIndicator: true
+      slidingWindowType: COUNT_BASED
+      slidingWindowSize: 10
+      failureRateThreshold: 50
+      waitDurationInOpenState: 5000
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
 
 #Actuator
 management:

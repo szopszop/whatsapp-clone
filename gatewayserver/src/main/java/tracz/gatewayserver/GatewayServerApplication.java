@@ -33,16 +33,9 @@ public class GatewayServerApplication {
                                 .requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
                                         .setKeyResolver(userKeyResolver())))
                         .uri("lb://USER-SERVICE"))
-                .route(p -> p
-                        .path("/whatsapp/auth-server/**")
-                        .filters(f -> f.rewritePath("/whatsapp/auth-server/(?<segment>.*)", "/${segment}")
-                                .addResponseHeader("X-Response-Time", LocalDateTime.now().toString())
-                                .requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
-                                        .setKeyResolver(userKeyResolver())))
-                        .uri("lb://AUTH-SERVER"))
+
                 .build();
     }
-
 
     @Bean
     public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {

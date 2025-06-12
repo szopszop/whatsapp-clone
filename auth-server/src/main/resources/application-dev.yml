@@ -7,6 +7,7 @@ spring:
   config:
     activate:
       on-profile: dev
+    import: "optional:configserver:http://configserver:8060/"
   datasource:
     url: jdbc:postgresql://localhost:5430/${AUTH_SERVER_DB_NAME}
     username: ${POSTGRES_USERNAME}
@@ -14,35 +15,61 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
   security:
-    user:
-      name: user
-      password: password
     oauth2:
-      authorizationserver:
-        client:
-          oidc-client:
-            registration:
-              client-id: "oidc-client"
-              client-secret: "{noop}secret"
-              client-authentication-methods:
-                - "client_secret_basic"
-              authorization-grant-types:
-                - "authorization_code"
-                - "refresh_token"
-              redirect-uris:
-                - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
-              post-logout-redirect-uris:
-                - "http://127.0.0.1:8080/"
-              scopes:
-                - "openid"
-                - "profile"
-            require-authorization-consent: true
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/
+  cache:
+    type: redis
+    cache-names:
+      - buckets
+    redis:
+      time-to-live: 600000
+
+
+auth-server:
+  internal:
+    client-secret: ${AUTH_SERVER_INTERNAL_SECRET}
+  jwk:
+    keystore-path: "classpath:jwk.jks"
+    keystore-password: ${KEYSTORE_PASSWORD}
+    key-alias: "jwk-key"
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 2
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+
+resilience4j.retry:
+  configs:
+    default:
+      maxAttempts: 3
+      waitDuration: 500
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - java.util.concurrent.TimeoutException
+
+resilience4j.ratelimiter:
+  configs:
+    default:
+      timeoutDuration: 1000
+      limitRefreshPeriod: 5000
+      limitForPeriod: 1
 
 
 eureka:
@@ -59,6 +86,8 @@ info:
     name: "auth-server"
     description: "Auth server app"
     version: "1.0.0"
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
 
 #Actuator
 management:
@@ -89,7 +118,15 @@ management:
 
 logging:
   level:
+    root: INFO
     tracz:
-      authserver: debug
+      authserver: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+#OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

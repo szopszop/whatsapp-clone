@@ -10,6 +10,8 @@ import tracz.userservice.entity.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByAuthServerUserId(UUID authServerUserId);
     boolean existsByEmail(String email);
+    boolean existsByAuthServerUserId(UUID authServerUserId);
     Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
 }
