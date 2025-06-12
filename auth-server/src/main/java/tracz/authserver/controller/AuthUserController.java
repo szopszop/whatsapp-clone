@@ -48,7 +48,7 @@ public class AuthUserController {
         log.info("Register request with email: {}", request.getEmail());
         AuthUserDTO authUserDTO = authUserService.register(request);
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.LOCATION, ApiPaths.REGISTER + "/" + authUserDTO.getId());
+        headers.add(HttpHeaders.LOCATION, ApiPaths.REGISTER + "/" + authUserDTO.id());
         return new ResponseEntity<>(authUserDTO, headers, HttpStatus.CREATED);
     }
 

@@ -5,15 +5,12 @@ import tracz.authserver.entity.Role;
 
 public class RoleMapper {
     public static RoleDTO roleToDto(Role role) {
-        return RoleDTO.builder()
-                .id(role.getId())
-                .name(role.getName())
-                .build();
+        return new RoleDTO (role.getId(),role.getName());
     }
 
     public static Role dtoToRole(RoleDTO dto) {
         return Role.builder()
-                .name(dto.getName())
+                .name(dto.name())
                 .build();
 
     }

@@ -1,16 +1,10 @@
 package tracz.userservice.entity;
 
-import java.time.Instant;
-import java.util.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.type.SqlTypes;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.util.*;
 
 @Entity
 @Getter
@@ -29,7 +23,7 @@ public class User extends BaseEntity {
     @Size(max = 100)
     private String email;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection()
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role_name")
     @Builder.Default

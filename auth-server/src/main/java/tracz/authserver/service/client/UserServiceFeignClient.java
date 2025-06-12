@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import tracz.authserver.config.ApiPaths;
 import tracz.authserver.dto.UserProvisionRequestDTO;
 
-
 @FeignClient(name = "USER-SERVICE", fallback = UserServiceFallback.class)
 public interface UserServiceFeignClient {
 

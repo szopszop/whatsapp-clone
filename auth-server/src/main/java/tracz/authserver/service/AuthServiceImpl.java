@@ -100,15 +100,15 @@ public class AuthServiceImpl implements AuthUserService {
     public AuthResponse authenticate(AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword())
+                        request.email(),
+                        request.password())
         );
         return generateTokens(authentication);
     }
 
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         try {
-            Jwt jwt = jwtDecoder.decode(request.getRefreshToken());
+            Jwt jwt = jwtDecoder.decode(request.refreshToken());
             String email = jwt.getSubject();
 
             AuthUser authUser = authUserRepository.findByEmail(email)
@@ -155,9 +155,6 @@ public class AuthServiceImpl implements AuthUserService {
         String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(header, accessClaims)).getTokenValue();
         String refreshedToken = jwtEncoder.encode(JwtEncoderParameters.from(header, refreshClaims)).getTokenValue();
 
-        return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshedToken)
-                .build();
+        return new AuthResponse(accessToken, refreshedToken);
     }
 }
