@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: user-service
-  config:
-    activate:
-      on-profile: dev
   datasource:
     url: jdbc:postgresql://localhost:5430/${USER_SERVICE_DB_NAME}
     username: ${POSTGRES_USERNAME}

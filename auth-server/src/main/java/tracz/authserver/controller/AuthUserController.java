@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import tracz.authserver.config.ApiPaths;
@@ -25,7 +24,6 @@ import tracz.authserver.service.AuthUserService;
 @Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
 public class AuthUserController {
     private final AuthUserService authUserService;
-    private final Environment environment;
 
     @Value("${info.app.version}")
     private String buildVersion;
@@ -43,9 +41,10 @@ public class AuthUserController {
             @ApiResponse(responseCode = "500", description = "Internal error",
                     content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
+    @RateLimiter(name = "register")
     @PostMapping(ApiPaths.REGISTER)
     public ResponseEntity<AuthUserDTO> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("Register request with email: {}", request.getEmail());
+        log.info("Register request with email: {}", request.email());
         AuthUserDTO authUserDTO = authUserService.register(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.LOCATION, ApiPaths.REGISTER + "/" + authUserDTO.id());
@@ -65,6 +64,7 @@ public class AuthUserController {
                     content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     }
     )
+    @RateLimiter(name = "login")
     @PostMapping(ApiPaths.LOGIN)
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
         AuthResponse authResponse = authUserService.authenticate(request);
@@ -85,6 +85,7 @@ public class AuthUserController {
     }
     )
     @PostMapping(ApiPaths.REFRESH)
+    @RateLimiter(name = "refresh")
     public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse authResponse = authUserService.refreshToken(request);
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
@@ -104,6 +105,7 @@ public class AuthUserController {
     }
     )
     @GetMapping("/build-info")
+    @RateLimiter(name = "build-info")
     public ResponseEntity<String> getBuildInfo() {
         log.debug("getBuildInfo() method Invoked");
         return ResponseEntity
@@ -111,23 +113,16 @@ public class AuthUserController {
                 .body(buildVersion);
     }
 
-    @Operation(
-            summary = "Get Java version", description = "Get Java version"
-    )
+    @Operation(summary = "User logout", description = "Blacklists the refresh token to prevent further use.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200", description = "Java version sent",
-                    content = @Content(schema = @Schema(implementation = String.class))),
-            @ApiResponse(
-                    responseCode = "500", description = "HTTP Status Internal Server Error",
-                    content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
-    }
-    )
-    @RateLimiter(name = "getJavaVersion")
-    @GetMapping("/java-version")
-    public ResponseEntity<String> getJavaVersion() {
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    @PostMapping(ApiPaths.LOGOUT)
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authUserService.logout(request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(environment.getProperty("JAVA_HOME"));
+                .build();
     }
 }
