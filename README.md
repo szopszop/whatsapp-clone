@@ -3,7 +3,8 @@
 A WhatsApp-style chat system using Spring Boot, WebFlux, RabbitMQ, and MongoDB. It supports JWT-based authentication, WebSockets for real-time messaging, and push notifications via Firebase (FCM).
 Covered with **Unit Tests** and **Integration Tests** using **Test Containers**.
 
-![image](https://github.com/user-attachments/assets/16088909-61ab-44c1-85f1-f323f50d79fb)
+![image](https://github.com/szopszop/whatsapp-clone/blob/main/architektura%20(1).png)
+
 
 
 Configuration managed from external repository:
