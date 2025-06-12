@@ -96,7 +96,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(ApiPaths.REGISTER, ApiPaths.LOGIN, ApiPaths.REFRESH).permitAll()
+                        .requestMatchers(ApiPaths.REGISTER, ApiPaths.LOGIN, ApiPaths.REFRESH, ApiPaths.LOGOUT).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
