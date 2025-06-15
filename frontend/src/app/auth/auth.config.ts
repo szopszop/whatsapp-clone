@@ -7,7 +7,5 @@ export const authCodeFlowConfig: AuthConfig = {
     clientId: 'client',
     responseType: 'code',
     scope: 'openid profile email',
-    usePkce: true,
     showDebugInformation: !environment.production,
-    disableNonceCheck: true
 };
