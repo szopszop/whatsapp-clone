@@ -7,3 +7,4 @@ public record AuthUserDTO (
         UUID id,
         String email,
         Set<RoleDTO> roles){}
+

@@ -13,6 +13,7 @@ import java.time.Instant;
 public class BlacklistedToken {
 
     @Id
+    @Column(nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

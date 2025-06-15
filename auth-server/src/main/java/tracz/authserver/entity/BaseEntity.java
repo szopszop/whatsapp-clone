@@ -24,18 +24,18 @@ public class BaseEntity {
     private UUID id;
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @CreatedBy
-    @Column(updatable = false)
+    @Column(name = "created_by", nullable = false, updatable = false)
     private String createdBy;
 
     @LastModifiedDate
-    @Column(insertable = false)
+    @Column(name = "updated_at", insertable = false)
     private Instant updatedAt;
 
     @LastModifiedBy
-    @Column(insertable = false)
+    @Column(name = "updated_by")
     private String updatedBy;
 }

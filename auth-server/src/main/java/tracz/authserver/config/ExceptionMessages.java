@@ -2,8 +2,8 @@ package tracz.authserver.config;
 
 public class ExceptionMessages {
     public static final String USER_NOT_FOUND = "User not found";
-    public static final String EMAIL_EXISTS = "Email already exists";
-    public static final String INVALID_EMAIL = "Invalid email address";
+    public static final String EMAIL_EXISTS = "User already exists";
+    public static final String INPUT_VALIDATION_ERRORS = "Input validation errors";
     public static final String BAD_CREDENTIALS = "Bad credentials";
     public static final String INVALID_TOKEN = "Invalid token";
     public static final String PASSWORD_MISMATCH = "Password does not match";

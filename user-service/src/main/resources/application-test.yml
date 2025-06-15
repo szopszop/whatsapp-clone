@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: user-service
-  config:
-    activate:
-      on-profile: dev
   datasource:
     url: jdbc:postgresql://localhost:5430/${USER_SERVICE_DB_NAME}
     username: ${POSTGRES_USERNAME}
@@ -16,7 +13,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "http://localhost:8090/"
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   jpa:
     hibernate:
       ddl-auto: create-drop

@@ -5,8 +5,6 @@ spring:
   application:
     name: auth-server
   config:
-    activate:
-      on-profile: dev
     import: "optional:configserver:http://configserver:8060/"
   datasource:
     url: jdbc:postgresql://localhost:5430/${AUTH_SERVER_DB_NAME}
@@ -25,6 +23,8 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     locations: classpath:db/migration
+    clean-disabled: false
+    out-of-order: true
   security:
     oauth2:
       resourceserver:
@@ -45,6 +45,7 @@ auth-server:
     keystore-path: "classpath:jwk.jks"
     keystore-password: ${KEYSTORE_PASSWORD}
     key-alias: "jwk-key"
+
 
 resilience4j.circuitbreaker:
   configs:
@@ -68,16 +69,8 @@ resilience4j.ratelimiter:
   configs:
     default:
       timeoutDuration: 1000
-      limitRefreshPeriod: 5000
-      limitForPeriod: 1
-
-
-eureka:
-  client:
-    fetchRegistry: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://localhost:8070/eureka/
+      limitRefreshPeriod: 1000
+      limitForPeriod: 2
 
 
 #Eureka dashboard
@@ -88,6 +81,15 @@ info:
     version: "1.0.0"
   cors:
     allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+
 
 #Actuator
 management:
@@ -123,6 +125,7 @@ logging:
       authserver: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
 
 #OpenAPI
 springdoc:

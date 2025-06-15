@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthUserService {
+public class AuthUserServiceImpl implements AuthUserService {
 
     private final AuthUserRepository authUserRepository;
     private final RoleRepository roleRepository;
@@ -48,19 +48,16 @@ public class AuthServiceImpl implements AuthUserService {
     @Override
     @Transactional
     public AuthUserDTO register(RegisterRequest request) {
-        if (authUserRepository.existsByEmail(request.getEmail())) {
-            throw new UserAlreadyExistsException("Email " + request.getEmail() + " already exists.");
+        if (authUserRepository.existsByEmail(request.email())) {
+            throw new UserAlreadyExistsException("User already exists with email: " + request.email());
         }
-        log.info("Registering user with email: {}", request.getEmail());
+        log.info("Registering user with email: {}", request.email());
         AuthUser authUser = AuthUser.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
                 .build();
         Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> {
-                    Role newRole = Role.builder().name("ROLE_USER").build();
-                    return roleRepository.save(newRole);
-                });
+                .orElseThrow(() -> new IllegalStateException("ROLE_USER does not exist in DB"));
         authUser.setRoles(Set.of(userRole));
 
         AuthUser savedUser = authUserRepository.save(authUser);
@@ -177,7 +174,12 @@ public class AuthServiceImpl implements AuthUserService {
             String jwtId = jwt.getId();
             Instant expiry = jwt.getExpiresAt();
 
-            if (jwtId == null || expiry != null) {
+            if (blacklistedTokenRepository.existsByJwtId(jwtId)) {
+                log.info("Token with jwtId {} has been blacklisted already.", jwtId);
+                return;
+            }
+
+            if (jwtId != null && expiry != null) {
                 BlacklistedToken blacklistedToken = BlacklistedToken.builder()
                         .jwtId(jwtId)
                         .expiryDate(expiry)
