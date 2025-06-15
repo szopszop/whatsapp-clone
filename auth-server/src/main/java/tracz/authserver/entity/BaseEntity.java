@@ -32,7 +32,7 @@ public class BaseEntity {
     private String createdBy;
 
     @LastModifiedDate
-    @Column(name = "updated_at", nullable = false, insertable = false)
+    @Column(name = "updated_at", insertable = false)
     private Instant updatedAt;
 
     @LastModifiedBy

@@ -15,7 +15,7 @@ import tracz.authserver.entity.Role;
 import java.util.Optional;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @DataJpaTest

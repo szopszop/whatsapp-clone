@@ -179,7 +179,7 @@ public class AuthUserServiceImpl implements AuthUserService {
                 return;
             }
 
-            if (jwtId == null || expiry != null) {
+            if (jwtId != null && expiry != null) {
                 BlacklistedToken blacklistedToken = BlacklistedToken.builder()
                         .jwtId(jwtId)
                         .expiryDate(expiry)

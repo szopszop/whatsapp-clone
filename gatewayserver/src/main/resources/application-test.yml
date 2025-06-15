@@ -5,6 +5,11 @@ spring:
     import: "optional:configserver:http://localhost:8060/"
   cloud:
     gateway:
+      routes:
+        - id: user-service-route
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
       discovery:
         locator:
           enabled: false
@@ -12,6 +17,11 @@ spring:
       httpclient:
         connect-timeout: 1000
         response-timeout: 10s
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   data:
     redis:
       connect-timeout: 2s

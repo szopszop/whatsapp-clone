@@ -6,10 +6,6 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: auth-server-route
-          uri: lb://auth-server
-          predicates:
-            - Path=/auth/**
         - id: user-service-route
           uri: lb://user-service
           predicates:
@@ -25,7 +21,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8090
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   data:
     redis:
       connect-timeout: 2s

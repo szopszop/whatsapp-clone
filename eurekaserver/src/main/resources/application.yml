@@ -1,6 +1,6 @@
 spring:
   application:
-    name: "eurekaserver"
+    name: eurekaserver
   config:
     import: "optional:configserver:http://configserver:8060/"
   cloud:
