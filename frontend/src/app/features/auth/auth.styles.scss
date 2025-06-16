@@ -1,0 +1,138 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: var(--background-color-dark);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 40px;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  .logo {
+    height: 32px;
+  }
+
+  ó
+  h2 {
+    font-family: var(--font-family-headings);
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.subtitle {
+  color: var(--text-color-secondary);
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(13, 71, 161, 0.2);
+  }
+}
+
+.form-control.is-invalid {
+  border-color: var(--accent-color);
+}
+
+.form-text {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  margin-top: 4px;
+  display: block;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-color-light);
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:disabled {
+    background-color: #90caf9;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    background-color: #0b3a8d;
+  }
+}
+
+.auth-switch {
+  margin-top: 24px;
+  font-size: 14px;
+
+  a {
+    color: var(--primary-color);
+    font-weight: 500;
+  }
+}
+
+.error-message, .validation-error {
+  color: var(--accent-color);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.error-message {
+  background-color: #ffebee;
+  border: 1px solid var(--accent-color);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.success-message {
+  color: #1b5e20;
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+}

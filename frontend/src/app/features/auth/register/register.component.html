@@ -1,0 +1,28 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <img src="assets/logo.svg" alt="Logo" class="logo">
+    <h2>Stwórz konto</h2>
+    <p>Dołącz do nas i zacznij rozmawiać ze znajomymi.</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <input id="password" type="password" formControlName="password" class="form-control">
+        <small>Min. 8 znaków, duża i mała litera, cyfra, znak specjalny.</small>
+      </div>
+
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+
+      <button type="submit" class="auth-button" [disabled]="registerForm.invalid">Zarejestruj się</button>
+    </form>
+
+    <div class="auth-switch">
+      Masz już konto? <a routerLink="/login">Zaloguj się</a>
+    </div>
+  </div>
+</div>

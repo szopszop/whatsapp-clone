@@ -92,6 +92,19 @@ public class AuthUserController {
     }
 
 
+    @Operation(summary = "User logout", description = "Blacklists the refresh token to prevent further use.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    @PostMapping(ApiPaths.LOGOUT)
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authUserService.logout(request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
+
     @Operation(
             summary = "Get Build information", description = "Get Auth Server's Build information"
     )
@@ -111,18 +124,5 @@ public class AuthUserController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(buildVersion);
-    }
-
-    @Operation(summary = "User logout", description = "Blacklists the refresh token to prevent further use.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Logout successful"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
-    })
-    @PostMapping(ApiPaths.LOGOUT)
-    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
-        authUserService.logout(request);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .build();
     }
 }

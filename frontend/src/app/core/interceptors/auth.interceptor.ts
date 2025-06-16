@@ -1,24 +1,45 @@
-import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
-import {OAuthService} from 'angular-oauth2-oidc';
-import {environment} from '../../../environments/environment';
+import {HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest} from '@angular/common/http';
+import {inject} from '@angular/core';
+import {AuthService} from '../services/auth.service';
+import {catchError, Observable, switchMap, throwError} from 'rxjs';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  constructor(private oauthService: OAuthService) {
+let isRefreshing = false;
+
+export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
+  const authService = inject(AuthService);
+  const token = authService.getAccessToken();
+
+  if (token) {
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   }
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const apiUrl = environment.gatewayApiUrl;
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401 && !isRefreshing) {
+        isRefreshing = true;
 
-    if (req.url.startsWith(apiUrl) && this.oauthService.hasValidAccessToken()) {
-      const token = this.oauthService.getAccessToken();
-      const headers = req.headers.set('Authorization', `Bearer ${token}`);
-      const authReq = req.clone({headers});
-      return next.handle(authReq);
-    }
-
-    return next.handle(req);
-  }
-}
+        return authService.refreshToken().pipe(
+          switchMap((authResponse) => {
+            isRefreshing = false;
+            const newReq = req.clone({
+              setHeaders: {
+                Authorization: `Bearer ${authResponse.accessToken}`,
+              },
+            });
+            return next(newReq);
+          }),
+          catchError((refreshError) => {
+            isRefreshing = false;
+            authService.logout();
+            return throwError(() => refreshError);
+          })
+        );
+      }
+      return throwError(() => error);
+    })
+  );
+};
