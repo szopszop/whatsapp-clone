@@ -1,14 +1,20 @@
 import {CanActivateFn, Router} from '@angular/router';
 import {inject} from '@angular/core';
-import {OAuthService} from 'angular-oauth2-oidc';
+import {AuthService} from '../../services/auth.service';
+import {map, take} from 'rxjs';
 
 export const authGuard: CanActivateFn = () => {
-  const oauthService = inject(OAuthService);
+  const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (oauthService.hasValidAccessToken()) {
-    return true;
-  }
-  router.navigate(['/login']);
-  return false;
+  return authService.isAuthenticated$.pipe(
+    take(1),
+    map(isAuthenticated => {
+      if (isAuthenticated) {
+        return true;
+      }
+      router.navigate(['/']);
+      return false;
+    })
+  );
 };

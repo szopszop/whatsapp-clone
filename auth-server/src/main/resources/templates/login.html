@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+<div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+    <h2 class="mb-4 text-center">Sign In</h2>
+    <form id="loginForm" method="GET" action="/oauth2/authorize">
+        <div class="mb-3">
+            <label for="username" class="form-label">Email</label>
+            <input name="username" id="username" type="email" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input name="password" id="password" type="password" class="form-control" required>
+        </div>
+
+        <input type="hidden" name="client_id" value="your-client-id">
+        <input type="hidden" name="redirect_uri" value="https://your-app.com/callback">
+        <input type="hidden" name="response_type" value="code">
+        <input type="hidden" name="code_challenge" id="code_challenge" value="">
+        <input type="hidden" name="code_challenge_method" value="S256">
+
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+</div>
+
+<script>
+    async function generateCodeChallenge(codeVerifier) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(codeVerifier);
+        const digest = await crypto.subtle.digest('SHA-256', data);
+        return btoa(String.fromCharCode(...new Uint8Array(digest)))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    const verifier = [...crypto.getRandomValues(new Uint8Array(32))]
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+
+    generateCodeChallenge(verifier).then(challenge => {
+        document.getElementById('code_challenge').value = challenge;
+        sessionStorage.setItem('pkce_verifier', verifier);
+    });
+</script>
+</body>
+</html>

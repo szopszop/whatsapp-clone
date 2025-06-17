@@ -1,30 +1,16 @@
-import {environment} from "../../../environments/environment";
 import { AuthConfig } from 'angular-oauth2-oidc';
-import {APP_INITIALIZER, EnvironmentProviders, Provider} from '@angular/core';
-import {AuthService} from '../services/auth.service';
+import {environment} from '../../../environments/environment';
 
-export const authCodeFlowConfig: AuthConfig = {
+export const authConfig: AuthConfig = {
   issuer: environment.authServerUrl,
   redirectUri: window.location.origin,
-  clientId: 'angular-ui',
+  clientId: 'angular-client',
   responseType: 'code',
   scope: 'openid profile email',
   showDebugInformation: !environment.production,
+  requireHttps: environment.production,
+  silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
+  silentRefreshTimeout: 5000,
+  clearHashAfterLogin: true,
+  silentRefreshShowIFrame: false,
 };
-
-export function initializeAuth(authService: AuthService): () => Promise<void> {
-  return () => authService.initializeAuth();
-}
-
-
-export function provideAuth(): (Provider | EnvironmentProviders)[] {
-  return [
-    AuthService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeAuth,
-      deps: [AuthService],
-      multi: true,
-    },
-  ];
-}

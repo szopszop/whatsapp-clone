@@ -25,6 +25,8 @@ spring:
     locations: classpath:db/migration
     clean-disabled: false
     out-of-order: true
+    placeholders:
+      auth_server_internal_secret: "${AUTH_SERVER_INTERNAL_SECRET}"
   security:
     oauth2:
       resourceserver:

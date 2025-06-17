@@ -4,17 +4,20 @@
       <span>WhatsApp Clone</span>
     </a>
     <div class="navbar-links">
-      <ng-container *ngIf="isAuthenticated$ | async">
+      <ng-container *ngIf="isAuthenticated$ | async; else guestLinks">
         <a routerLink="/chat" routerLinkActive="active-link">Czat</a>
-        <a *ngIf="isAdmin$ | async" routerLink="/admin" routerLinkActive="active-link">Panel Admina</a>
-        <div class="user-info">
-          <span class="user-name">{{ (userProfile$ | async)?.name }}</span>
-          <button class="logout-button" (click)="logout()">Wyloguj</button>
-        </div>
+        <a *ngIf="isAdmin$ | async" routerLink="/admin" routerLinkActive="active-link">Admin</a>
+        <span class="user-name">{{ (userProfile$ | async)?.name }}</span>
+        <button (click)="logout()">Wyloguj</button>
       </ng-container>
+
+      <ng-template #guestLinks>
+        <button (click)="login()">Zaloguj</button>
+      </ng-template>
     </div>
   </header>
   <main class="content">
+
     <router-outlet></router-outlet>
   </main>
 </div>

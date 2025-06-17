@@ -7,24 +7,20 @@ import {LayoutComponent} from './features/layout/layout.component';
 import {PageNotFoundComponent} from './features/page-not-found/page-not-found.component';
 import {ChatComponent} from './features/chat/chat.component';
 import {RegisterComponent} from './features/auth/register/register.component';
+import {HomeComponent} from './features/home/home.component';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  {path: 'login', component: LoginComponent},
+  {path: 'register', component: RegisterComponent},
   {
     path: '',
     component: LayoutComponent,
-    canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'chat', pathMatch: 'full' },
-      { path: 'chat', component: ChatComponent },
-      {
-        path: 'admin',
-        component: AdminPanelComponent,
-        canActivate: [adminGuard]
-      },
-    ],
+      {path: '', component: HomeComponent},
+      {path: 'chat', component: ChatComponent, canActivate: [authGuard]},
+      {path: 'admin', component: AdminPanelComponent, canActivate: [adminGuard]},
+    ]
   },
   // 404
-  { path: '**', component: PageNotFoundComponent },
+  {path: '**', component: PageNotFoundComponent},
 ]
