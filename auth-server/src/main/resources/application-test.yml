@@ -125,8 +125,8 @@ logging:
     root: INFO
     tracz:
       authserver: DEBUG
-      org.springframework.security: debug
-      org.springframework.security.oauth2: debug
+      org.springframework.security: DEBUG
+      org.springframework.security.oauth2: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
