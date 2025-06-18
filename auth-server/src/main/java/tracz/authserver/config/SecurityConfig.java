@@ -37,7 +37,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.security.web.util.matcher.*;
 import org.springframework.web.cors.*;
 import java.security.KeyStore;
 import java.util.Arrays;
@@ -59,51 +59,51 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                OAuth2AuthorizationServerConfigurer.authorizationServer();
-        http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher());
-
-        http.with(authorizationServerConfigurer, config -> config
-                .oidc(Customizer.withDefaults())
-                .authorizationServerSettings(authorizationServerSettings())
-        );
+                new OAuth2AuthorizationServerConfigurer();
+        RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
 
         http
-                .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-                .exceptionHandling(exceptions -> exceptions
-                        .defaultAuthenticationEntryPointFor(
+                .securityMatcher(endpointsMatcher)
+                .authorizeHttpRequests(authorize ->
+                        authorize.anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
+                .exceptionHandling(exceptions ->
+                        exceptions.defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
-                .oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()))
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-
+                .with(authorizationServerConfigurer, authServerConfig -> {
+                    authServerConfig.oidc(Customizer.withDefaults());
+                });
         return http.build();
     }
-
 
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/assets/**", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
-                        .requestMatchers(HttpMethod.POST, ApiPaths.REGISTER).permitAll()
+                        .requestMatchers(ApiPaths.REGISTER).permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/login")
+                .oauth2ResourceServer(resourceServer ->
+                        resourceServer.jwt(Customizer.withDefaults()))
+                .formLogin(formLogin ->
+                        formLogin.loginPage("/login")
                         .permitAll()
                 )
-                .logout(logout -> logout
-                        .logoutSuccessUrl(allowedOrigins.split(",")[0] + "?logout")
+                .logout(logout ->
+                        logout.logoutSuccessUrl(allowedOrigins.split(",")[0] + "?logout")
                 )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                );
+                        .ignoringRequestMatchers(ApiPaths.REGISTER, ApiPaths.REFRESH));
 
         return http.build();
     }
@@ -153,7 +153,6 @@ public class SecurityConfig {
             throw new IllegalStateException("Failed to load JWK from keystore", ex);
         }
     }
-
 
     @Bean
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
