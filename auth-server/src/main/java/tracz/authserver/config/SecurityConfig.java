@@ -57,17 +57,18 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
+    public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+                OAuth2AuthorizationServerConfigurer.authorizationServer();
         http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher());
 
+        http.with(authorizationServerConfigurer, config -> config
+                .oidc(Customizer.withDefaults())
+                .authorizationServerSettings(authorizationServerSettings())
+        );
+
         http
-                .with(authorizationServerConfigurer, configurer -> configurer
-                        .oidc(oidc -> oidc
-                                .userInfoEndpoint(Customizer.withDefaults())
-                                .clientRegistrationEndpoint(Customizer.withDefaults())
-                        )
-                )
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions
                         .defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
@@ -79,6 +80,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     @Order(2)

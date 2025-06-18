@@ -51,25 +51,25 @@ public class AuthUserController {
         return new ResponseEntity<>(authUserDTO, headers, HttpStatus.CREATED);
     }
 
-    @Operation(
-            summary = "User authentication",
-            description = "Login a new User in the auth-server"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "User logged in successfully",
-                    content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input data",
-                    content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
-            @ApiResponse(responseCode = "500", description = "Internal error",
-                    content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
-    }
-    )
-    @RateLimiter(name = "login")
-    @PostMapping(ApiPaths.LOGIN)
-    public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
-        AuthResponse authResponse = authUserService.authenticate(request);
-        return new ResponseEntity<>(authResponse, HttpStatus.OK);
-    }
+//    @Operation(
+//            summary = "User authentication",
+//            description = "Login a new User in the auth-server"
+//    )
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "User logged in successfully",
+//                    content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+//            @ApiResponse(responseCode = "400", description = "Invalid input data",
+//                    content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+//            @ApiResponse(responseCode = "500", description = "Internal error",
+//                    content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
+//    }
+//    )
+//    @RateLimiter(name = "login")
+//    @PostMapping(ApiPaths.LOGIN)
+//    public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
+//        AuthResponse authResponse = authUserService.authenticate(request);
+//        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+//    }
 
     @Operation(
             summary = "Token refresh operation",

@@ -25,16 +25,17 @@ INSERT INTO oauth2_registered_client (
              'http://localhost:4200',
              'openid,profile,api.read',
              '{
+                 "@class": "java.util.HashMap",
                  "requireProofKey": true,
                  "requireAuthorizationConsent": false
               }',
              '{
+                 "@class": "java.util.HashMap",
                  "accessTokenTimeToLive": 900,
                  "refreshTokenTimeToLive": 86400,
                  "reuseRefreshTokens": true
               }'
          );
-
 
 INSERT INTO oauth2_registered_client (
     id,
@@ -62,8 +63,11 @@ INSERT INTO oauth2_registered_client (
              NULL,
              NULL,
              'internal.user.read',
-             '{}',
              '{
+                 "@class": "java.util.HashMap"
+             }',
+             '{
+                 "@class": "java.util.HashMap",
                  "accessTokenTimeToLive": 3600
              }'
          );
