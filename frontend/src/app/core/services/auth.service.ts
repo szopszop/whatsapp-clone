@@ -48,7 +48,7 @@ export class AuthService {
   }
 
   public login(): void {
-    this.oauthService.initCodeFlow();
+    this.oauthService.initLoginFlowInPopup();
   }
 
   public logout(): void {
