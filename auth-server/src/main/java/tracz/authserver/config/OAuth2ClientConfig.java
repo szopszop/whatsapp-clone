@@ -81,7 +81,7 @@ public class OAuth2ClientConfig {
                         .authorizationCodeTimeToLive(Duration.ofMinutes(5))
                         .accessTokenTimeToLive(Duration.ofMinutes(15))
                         .refreshTokenTimeToLive(Duration.ofDays(1))
-                        .reuseRefreshTokens(true)
+                        .reuseRefreshTokens(false)
                         .idTokenSignatureAlgorithm(SignatureAlgorithm.RS256)
                         .build())
                 .build();

@@ -30,4 +30,8 @@ export class LayoutComponent {
   login() {
     this.authService.login()
   }
+
+  register() {
+    this.authService.register();
+  }
 }

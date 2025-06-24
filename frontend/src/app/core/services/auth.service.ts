@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, NgZone} from '@angular/core';
 import {BehaviorSubject, map, Observable} from 'rxjs';
 import {UserProfile} from "../models/user-profile.model";
 import {OAuthEvent, OAuthService} from "angular-oauth2-oidc";
@@ -17,44 +17,89 @@ export class AuthService {
   public isAdmin$: Observable<boolean>;
 
   constructor(
-      private oauthService: OAuthService,
-      private router: Router
+    private oauthService: OAuthService,
+    private router: Router,
+    private zone: NgZone
   ) {
     this.isAdmin$ = this.userProfile$.pipe(
-        map(profile => profile?.roles?.includes('ROLE_ADMIN') ?? false)
+      map(profile => profile?.roles?.includes('ROLE_ADMIN') ?? false)
     );
 
     this.initializeAuthService();
+    this.setupPopupMessageListener();
+
+    this.checkInitialAuthState();
   }
 
-  private initializeAuthService(): void {
-    this.oauthService.events.subscribe((event: OAuthEvent) => {
-      switch (event.type) {
-        case 'token_received':
-        case 'token_refreshed':
-          this.handleAuthenticationSuccess();
-          break;
-        case 'logout':
-        case 'token_expires':
-        case 'token_error':
-          this.handleAuthenticationFailure();
-          break;
-      }
-    });
-
+  private checkInitialAuthState(): void {
     if (this.oauthService.hasValidAccessToken()) {
       this.handleAuthenticationSuccess();
     }
   }
 
-  public login(): void {
-    this.oauthService.initCodeFlow();
+  private initializeAuthService(): void {
+    this.oauthService.events.subscribe((event: OAuthEvent) => {
+      console.log('OAuth Event:', event.type);
+      switch (event.type) {
+        case 'token_received':
+        case 'token_refreshed':
+          console.log('Token received/refreshed - updating auth state');
+          this.handleAuthenticationSuccess();
+          break;
+        case 'logout':
+        case 'token_expires':
+        case 'token_error':
+          console.log('Auth failure event - updating auth state');
+          this.handleAuthenticationFailure();
+          break;
+      }
+    });
+  }
+
+  private setupPopupMessageListener(): void {
+    window.addEventListener('message', (event) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data && event.data.type === 'oauth-callback') {
+        console.log('Received popup callback:', event.data);
+
+        this.zone.run(() => {
+          this.oauthService.tryLogin({
+            customHashFragment: event.data.search || event.data.hash
+          }).then(() => {
+            if (this.oauthService.hasValidAccessToken()) {
+              console.log('Login successful - updating auth state');
+              this.handleAuthenticationSuccess();
+              this.router.navigate(['/']);
+            } else {
+              this.handleAuthenticationFailure();
+            }
+          }).catch((error) => {
+            this.handleAuthenticationFailure();
+          });
+        });
+      }
+    });
+  }
+
+  public async login(): Promise<void> {
+    try {
+      await this.oauthService.initLoginFlowInPopup({height:500,width:600,});
+    } catch (error) {
+      console.error('Popup login error:', error);
+    }
+  }
+
+  public register(): void {
+    const registerUrl = `${this.oauthService.issuer}/register`;
+    window.open(registerUrl, 'popup', 'width=600,height=700');
   }
 
   public logout(): void {
     this.oauthService.logOut();
-    this.handleAuthenticationFailure();
-    this.router.navigate(['/login']);
+    //this.router.navigate(['/login']);
   }
 
   public getAccessToken(): string | null {
@@ -70,10 +115,13 @@ export class AuthService {
   }
 
   private async handleAuthenticationSuccess(): Promise<void> {
+    console.log('Handling authentication success...');
     this.isAuthenticatedSubject.next(true);
 
     try {
       const claims = this.oauthService.getIdentityClaims() as any;
+      console.log('Identity claims:', claims);
+
       if (claims) {
         const userProfile: UserProfile = {
           sub: claims.sub,
@@ -84,6 +132,7 @@ export class AuthService {
           roles: claims.roles || []
         };
         this.userProfileSubject.next(userProfile);
+        console.log('User profile updated:', userProfile);
       }
     } catch (error) {
       console.error('Błąd podczas ładowania profilu użytkownika:', error);
@@ -91,6 +140,7 @@ export class AuthService {
   }
 
   private handleAuthenticationFailure(): void {
+    console.log('Handling authentication failure...');
     this.isAuthenticatedSubject.next(false);
     this.userProfileSubject.next(null);
   }

@@ -32,6 +32,13 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8090
+    client:
+      registration:
+        google:
+          client-id: ${GOOGLE_CLIENT_ID}
+          client-secret: ${GOOGLE_CLIENT_SECRET}
+          scope: openid,profile,email
+          redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
   cache:
     type: redis
     cache-names:

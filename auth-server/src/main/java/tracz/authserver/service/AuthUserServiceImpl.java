@@ -39,11 +39,7 @@ public class AuthUserServiceImpl implements AuthUserService {
     private final AuthUserRepository authUserRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final JwtEncoder jwtEncoder;
-    private final JwtDecoder jwtDecoder;
     private final UserServiceFeignClient userServiceFeignClient;
-    private final BlacklistedTokenRepository blacklistedTokenRepository;
 
     @Override
     @Transactional
@@ -90,106 +86,11 @@ public class AuthUserServiceImpl implements AuthUserService {
             }
         } catch (Exception e) {
             log.error(
-                    "Error during user provisioning call for user {} to user-service (Feing Exception or Fallback issue): {}",
+                    "Error during user provisioning call for user {} to user-service (Feign Exception or Fallback issue): {}",
                     authUser.getEmail(), e.getMessage(), e);
             throw new ServiceUnavailableException(
                     "User provisioning failed for " + authUser.getEmail() + " due to: " + e.getMessage(), e);
         }
     }
 
-    @Override
-    public AuthResponse authenticate(AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password())
-        );
-        return generateTokens(authentication);
-    }
-
-    @Override
-    public AuthResponse refreshToken(RefreshTokenRequest request) {
-        try {
-            Jwt jwt = jwtDecoder.decode(request.refreshToken());
-            String jwtId = jwt.getId();
-
-            if (jwtId == null || blacklistedTokenRepository.existsByJwtId(jwtId)) {
-                throw new AuthenticationException(ExceptionMessages.INVALID_TOKEN) {
-                };
-            }
-            String email = jwt.getSubject();
-
-            AuthUser authUser = authUserRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException(ExceptionMessages.USER_NOT_FOUND));
-
-            Collection<? extends GrantedAuthority> authorities = authUser.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority(role.getName()))
-                    .collect(Collectors.toSet());
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    email, null, authorities);
-
-            return generateTokens(authentication);
-
-        } catch (JwtException e) {
-            throw new AuthenticationException(ExceptionMessages.INVALID_TOKEN, e) {
-            };
-        }
-    }
-
-    private AuthResponse generateTokens(Authentication authentication) {
-        Instant now = Instant.now();
-        String subject = authentication.getName();
-        Set<String> authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-
-        JwtClaimsSet accessClaims = JwtClaimsSet.builder()
-                .subject(subject)
-                .issuedAt(now)
-                .expiresAt(now.plus(15, ChronoUnit.MINUTES))
-                .claim("scope", authorities)
-                .build();
-
-        JwtClaimsSet refreshClaims = JwtClaimsSet.builder()
-                .subject(subject)
-                .issuedAt(now)
-                .expiresAt(now.plus(7, ChronoUnit.DAYS))
-                .id(UUID.randomUUID().toString())
-                .build();
-
-        JwsHeader header = JwsHeader.with(SignatureAlgorithm.RS256).build();
-
-        String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(header, accessClaims)).getTokenValue();
-        String refreshedToken = jwtEncoder.encode(JwtEncoderParameters.from(header, refreshClaims)).getTokenValue();
-
-        return new AuthResponse(accessToken, refreshedToken);
-    }
-
-    @Transactional
-    @Override
-    public void logout(RefreshTokenRequest request) {
-        try {
-            Jwt jwt = jwtDecoder.decode(request.refreshToken());
-            String jwtId = jwt.getId();
-            Instant expiry = jwt.getExpiresAt();
-
-            if (blacklistedTokenRepository.existsByJwtId(jwtId)) {
-                log.info("Token with jwtId {} has been blacklisted already.", jwtId);
-                return;
-            }
-
-            if (jwtId != null && expiry != null) {
-                BlacklistedToken blacklistedToken = BlacklistedToken.builder()
-                        .jwtId(jwtId)
-                        .expiryDate(expiry)
-                        .build();
-                blacklistedTokenRepository.save(blacklistedToken);
-                log.info("Token with jwtId {} has been blacklisted.", jwtId);
-            }
-
-        } catch (JwtException e) {
-            log.warn("Attempted to logout with invalid token: {}", e.getMessage());
-        }
-    }
 }
