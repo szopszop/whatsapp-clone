@@ -20,13 +20,10 @@ import java.util.UUID;
 
 @Slf4j
 @Configuration
-@RequiredArgsConstructor
 public class OAuth2ClientConfig {
 
     @Value("${auth-server.internal.client-secret")
     private String internalClientSecret;
-
-    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
