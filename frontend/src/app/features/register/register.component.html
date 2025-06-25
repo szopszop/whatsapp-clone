@@ -1,0 +1,23 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2 class="gradient-text">Dołącz do nas!</h2>
+    <p>Utwórz konto, aby rozpocząć.</p>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" required>
+      </div>
+      <div class="form-field">
+        <label for="password">Hasło</label>
+        <input id="password" type="password" formControlName="password" required>
+      </div>
+      <button type="submit" [disabled]="registerForm.invalid" class="register-button">Zarejestruj się</button>
+    </form>
+    <div *ngIf="registrationError" class="error-message">
+      {{ registrationError }}
+    </div>
+    <div class="login-link">
+      Masz już konto? <a routerLink="/login">Zaloguj się</a>
+    </div>
+  </div>
+</div>

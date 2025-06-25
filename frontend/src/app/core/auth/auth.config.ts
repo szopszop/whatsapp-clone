@@ -3,7 +3,7 @@ import {environment} from '../../../environments/environment';
 
 export const authConfig: AuthConfig = {
   issuer: environment.authServerUrl,
-  redirectUri: window.location.origin,
+  redirectUri: window.location.origin + '/callback.html',
   clientId: 'oidc-client',
   responseType: 'code',
   scope: 'openid profile api.read',
@@ -17,5 +17,8 @@ export const authConfig: AuthConfig = {
   clearHashAfterLogin: true,
   silentRefreshShowIFrame: false,
   postLogoutRedirectUri: window.location.origin,
-  strictDiscoveryDocumentValidation: false
+  strictDiscoveryDocumentValidation: false,
+
+  timeoutFactor: 0.8,
+  skipSubjectCheck: true
 };
