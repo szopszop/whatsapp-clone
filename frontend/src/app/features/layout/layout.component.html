@@ -1,7 +1,7 @@
 <div class="app-layout">
   <header class="navbar">
     <a class="navbar-brand" routerLink="/chat">
-      <span>ChatApp</span>
+      <span>WhatsApp Clone</span>
     </a>
     <div class="navbar-links">
       <ng-container *ngIf="isAuthenticated$ | async; else guestLinks">
@@ -12,7 +12,8 @@
       </ng-container>
 
       <ng-template #guestLinks>
-        <button (click)="login()">Zaloguj się / Zarejestruj</button>
+        <button (click)="login()">Zaloguj</button>
+        <button (click)="register()">Zarejestruj się</button>
       </ng-template>
     </div>
   </header>

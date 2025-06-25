@@ -74,7 +74,6 @@ public class OAuth2ClientConfig {
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("http://localhost:4200")
-                .redirectUri("http://localhost:4200/callback.html")
                 .redirectUri("http://localhost:4200/silent-refresh.html")
                 .postLogoutRedirectUri("http://localhost:4200")
                 .scope(OidcScopes.OPENID)

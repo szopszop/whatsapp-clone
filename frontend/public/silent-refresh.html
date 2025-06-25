@@ -6,9 +6,7 @@
 </head>
 <body>
 <script>
-  if (window.parent && window.parent.parent) {
-    window.parent.parent.postMessage(location.hash || location.search, location.origin);
-  }
+  parent.postMessage(location.hash, location.origin);
 </script>
 </body>
 </html>
