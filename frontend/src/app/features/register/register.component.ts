@@ -8,7 +8,7 @@ import {RegisterRequest} from '../../core/models/register-request.model';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
@@ -84,6 +84,6 @@ export class RegisterComponent {
   }
 
   navigateToLogin() {
-    this.authService.navigateToLoginPage();
+    this.authService.login();
   }
 }

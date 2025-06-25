@@ -58,7 +58,7 @@ export class AuthService {
   public logout(): void {
     this.oauthService.logOut();
     this.handleAuthenticationFailure();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 
   public getAccessToken(): string | null {
@@ -107,7 +107,5 @@ export class AuthService {
     return this.http.post(`${environment.gatewayApiUrl}/auth/register`, registerRequest);
   }
 
-  navigateToLoginPage() {
 
-  }
 }

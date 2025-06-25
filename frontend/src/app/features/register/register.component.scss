@@ -1,0 +1,247 @@
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 20px;
+}
+
+.auth-card {
+  background: #2d2d2d;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid #404040;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+
+  h1 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+    font-family: var(--font-family-headings);
+  }
+
+  p {
+    color: #9aa0a6;
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+.auth-form {
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+
+  label {
+    display: block;
+    color: #e8eaed;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 16px;
+    background: #1a1a1a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #4285f4;
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+    }
+
+    &.error {
+      border-color: #ea4335;
+      box-shadow: 0 0 0 2px rgba(234, 67, 53, 0.2);
+    }
+
+    &::placeholder {
+      color: #9aa0a6;
+    }
+  }
+}
+
+.password-input-wrapper {
+  position: relative;
+
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9aa0a6;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+
+    &:hover {
+      color: #e8eaed;
+    }
+  }
+}
+
+.password-requirements {
+  margin-top: 12px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #404040;
+
+  .requirement {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #9aa0a6;
+    margin-bottom: 4px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &.met {
+      color: #34a853;
+    }
+
+    .requirement-icon {
+      margin-right: 8px;
+      font-size: 12px;
+      width: 16px;
+    }
+  }
+}
+
+.auth-button {
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.primary {
+    background: #4285f4;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background: #3367d6;
+    }
+  }
+
+  &.google {
+    background: #ffffff;
+    color: #3c4043;
+    border: 1px solid #dadce0;
+    margin-top: 12px;
+
+    &:hover {
+      background: #f8f9fa;
+    }
+  }
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.divider {
+  text-align: center;
+  margin: 24px 0;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #404040;
+  }
+
+  span {
+    background: #2d2d2d;
+    color: #9aa0a6;
+    padding: 0 16px;
+    font-size: 14px;
+    position: relative;
+  }
+}
+
+.error-message {
+  color: #ea4335;
+  font-size: 14px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 24px;
+
+  p {
+    color: #9aa0a6;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .link-button {
+    background: none;
+    border: none;
+    color: #4285f4;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: underline;
+    padding: 0;
+
+    &:hover {
+      color: #3367d6;
+    }
+  }
+}
