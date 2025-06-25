@@ -88,26 +88,28 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
-                        .requestMatchers(ApiPaths.REGISTER).permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/register", "/error", "/favicon.ico").permitAll()
                         .requestMatchers("/.well-known/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(resourceServer ->
                         resourceServer.jwt(Customizer.withDefaults()))
-                .formLogin(formLogin ->
-                        formLogin.loginPage("/login")
+                .formLogin(formLogin -> formLogin
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
                         .permitAll()
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .ignoringRequestMatchers(ApiPaths.REGISTER, ApiPaths.REFRESH));
+                        .ignoringRequestMatchers("/api/auth/register", "/api/auth/refresh"));
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -177,16 +179,16 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(
                 Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept",
                         "Origin", "X-XSRF-TOKEN"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }

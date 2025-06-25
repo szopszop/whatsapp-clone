@@ -3,6 +3,8 @@ import {BehaviorSubject, map, Observable} from 'rxjs';
 import {UserProfile} from "../models/user-profile.model";
 import {OAuthEvent, OAuthService} from "angular-oauth2-oidc";
 import {Router} from "@angular/router";
+import {HttpClient} from '@angular/common/http';
+import {environment} from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +21,8 @@ export class AuthService {
   constructor(
     private oauthService: OAuthService,
     private router: Router,
-    private zone: NgZone
+    private zone: NgZone,
+    private http: HttpClient
   ) {
     this.isAdmin$ = this.userProfile$.pipe(
       map(profile => profile?.roles?.includes('ROLE_ADMIN') ?? false)
@@ -61,24 +64,19 @@ export class AuthService {
       if (event.origin !== window.location.origin) {
         return;
       }
-
-      if (event.data && event.data.type === 'oauth-callback') {
-        console.log('Received popup callback:', event.data);
-
-        this.zone.run(() => {
-          this.oauthService.tryLogin({
-            customHashFragment: event.data.search || event.data.hash
-          }).then(() => {
-            if (this.oauthService.hasValidAccessToken()) {
-              console.log('Login successful - updating auth state');
-              this.handleAuthenticationSuccess();
-              this.router.navigate(['/']);
-            } else {
-              this.handleAuthenticationFailure();
-            }
-          }).catch((error) => {
-            this.handleAuthenticationFailure();
+      if (event.data && event.data.type === 'oauth-callback' && event.data.url) {
+        this.zone.run(async () => {
+          await this.oauthService.tryLogin({
+            customHashFragment: new URL(event.data.url).hash.substring(1)
           });
+
+          if (this.oauthService.hasValidAccessToken()) {
+            this.handleAuthenticationSuccess();
+            this.router.navigate(['/']);
+          } else {
+            console.error('Login failed after popup callback.');
+            this.handleAuthenticationFailure();
+          }
         });
       }
     });
@@ -92,26 +90,17 @@ export class AuthService {
     }
   }
 
-  public register(): void {
-    const registerUrl = `${this.oauthService.issuer}/register`;
-    window.open(registerUrl, 'popup', 'width=600,height=700');
+  public navigateToRegisterPage(): void {
+    this.router.navigate(['/register']);
+  }
+
+  public registerApi(email: string, password: string): Observable<any> {
+    const registerUrl = `${environment.authServerUrl}/api/auth/register`;
+    return this.http.post(registerUrl, { email, password });
   }
 
   public logout(): void {
     this.oauthService.logOut();
-    //this.router.navigate(['/login']);
-  }
-
-  public getAccessToken(): string | null {
-    return this.oauthService.getAccessToken();
-  }
-
-  public hasValidAccessToken(): boolean {
-    return this.oauthService.hasValidAccessToken();
-  }
-
-  public getUserProfile(): UserProfile | null {
-    return this.userProfileSubject.value;
   }
 
   private async handleAuthenticationSuccess(): Promise<void> {

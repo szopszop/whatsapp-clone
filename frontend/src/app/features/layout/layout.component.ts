@@ -32,6 +32,5 @@ export class LayoutComponent {
   }
 
   register() {
-    this.authService.register();
-  }
+    this.authService.navigateToRegisterPage();  }
 }

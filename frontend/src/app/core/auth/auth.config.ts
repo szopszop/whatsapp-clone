@@ -8,7 +8,7 @@ export const authConfig: AuthConfig = {
   responseType: 'code',
   scope: 'openid profile api.read',
   showDebugInformation: !environment.production,
-  requireHttps: environment.production,
+  //requireHttps: !environment.production,
 
   silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
   useSilentRefresh: true,
@@ -17,6 +17,5 @@ export const authConfig: AuthConfig = {
   clearHashAfterLogin: true,
   silentRefreshShowIFrame: false,
   postLogoutRedirectUri: window.location.origin,
-
   strictDiscoveryDocumentValidation: false
 };

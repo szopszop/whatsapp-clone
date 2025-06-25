@@ -11,3 +11,4 @@ public record RegisterRequest (
             message = "Password must be at least 8 characters long, with 1 uppercase letter, "
                     + "with 1 lower case letter, with 1 special character")
     String password) {}
+

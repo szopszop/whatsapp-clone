@@ -129,7 +129,7 @@ management:
 
 logging:
   level:
-    root: INFO
+    root: DEBUG
     tracz:
       authserver: DEBUG
       org.springframework.security: DEBUG

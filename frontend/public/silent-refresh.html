@@ -6,17 +6,8 @@
 </head>
 <body>
 <script>
-  if (window.opener) {
-    window.opener.postMessage({
-      type: 'oauth-callback',
-      url: window.location.href,
-      search: window.location.search,
-      hash: window.location.hash
-    }, window.location.origin);
-
-    window.close();
-  } else if (parent !== window) {
-    parent.postMessage(location.hash || location.search, location.origin);
+  if (window.parent && window.parent.parent) {
+    window.parent.parent.postMessage(location.hash || location.search, location.origin);
   }
 </script>
 </body>
