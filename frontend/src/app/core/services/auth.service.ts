@@ -61,18 +61,6 @@ export class AuthService {
     this.router.navigate(['/']);
   }
 
-  public getAccessToken(): string | null {
-    return this.oauthService.getAccessToken();
-  }
-
-  public hasValidAccessToken(): boolean {
-    return this.oauthService.hasValidAccessToken();
-  }
-
-  public getUserProfile(): UserProfile | null {
-    return this.userProfileSubject.value;
-  }
-
   private async handleAuthenticationSuccess(): Promise<void> {
     this.isAuthenticatedSubject.next(true);
 
