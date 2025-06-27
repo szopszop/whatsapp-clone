@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, NgZone} from '@angular/core';
 import {BehaviorSubject, map, Observable} from 'rxjs';
 import {UserProfile} from "../models/user-profile.model";
 import {OAuthEvent, OAuthService} from "angular-oauth2-oidc";
@@ -6,6 +6,7 @@ import {Router} from "@angular/router";
 import {environment} from '../../../environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {RegisterRequest} from '../models/register-request.model';
+import {IdentityClaims} from '../models/identity-claims.model';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +23,8 @@ export class AuthService {
   constructor(
     private oauthService: OAuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private ngZone: NgZone
   ) {
     this.isAdmin$ = this.userProfile$.pipe(
       map(profile => profile?.roles?.includes('ROLE_ADMIN') ?? false)
@@ -33,23 +35,35 @@ export class AuthService {
 
   private initializeAuthService(): void {
     this.oauthService.events.subscribe((event: OAuthEvent) => {
-      switch (event.type) {
-        case 'token_received':
-        case 'token_refreshed':
-          this.handleAuthenticationSuccess();
-          break;
-        case 'logout':
-        case 'token_expires':
-        case 'token_error':
-          this.handleAuthenticationFailure();
-          break;
-      }
+      this.ngZone.run(() => {
+        switch (event.type) {
+          case 'token_received':
+          case 'token_refreshed':
+            console.log('Token received or refreshed');
+            this.handleAuthenticationSuccess();
+            break;
+          case 'logout':
+          case 'token_expires':
+          case 'token_error':
+            console.log('Token expired or error');
+            this.handleAuthenticationFailure();
+            break;
+          case 'discovery_document_loaded':
+            console.log('Discovery document loaded');
+            if (this.oauthService.hasValidAccessToken()) {
+              this.handleAuthenticationSuccess();
+            }
+            break;
+        }
+      });
     });
 
     if (this.oauthService.hasValidAccessToken()) {
+      console.log('Token is valid on init');
       this.handleAuthenticationSuccess();
     }
   }
+
 
   public login(): void {
     this.oauthService.initCodeFlow();
@@ -62,10 +76,16 @@ export class AuthService {
   }
 
   private async handleAuthenticationSuccess(): Promise<void> {
+    console.log('handleAuthenticationSuccess called');
+
+    if (this.isAuthenticatedSubject.value) {
+      return;
+    }
+
     this.isAuthenticatedSubject.next(true);
 
     try {
-      const claims = this.oauthService.getIdentityClaims() as any;
+      const claims = this.oauthService.getIdentityClaims() as IdentityClaims;
       if (claims) {
         const userProfile: UserProfile = {
           sub: claims.sub,
@@ -76,6 +96,11 @@ export class AuthService {
           roles: claims.roles || []
         };
         this.userProfileSubject.next(userProfile);
+        console.log('User profile loaded:', userProfile);
+
+        this.ngZone.run(() => {
+          this.router.navigate(['/chat']);
+        });
       }
     } catch (error) {
       console.error('Błąd podczas ładowania profilu użytkownika:', error);
@@ -94,6 +119,4 @@ export class AuthService {
   registerApi(registerRequest: RegisterRequest): Observable<any> {
     return this.http.post(`${environment.gatewayApiUrl}/auth/register`, registerRequest);
   }
-
-
 }

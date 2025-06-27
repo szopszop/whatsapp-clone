@@ -100,16 +100,20 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(resourceServer ->
                         resourceServer.jwt(Customizer.withDefaults()))
-                .formLogin(formLogin -> formLogin
+                .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
                         .successHandler(oAuth2LoginSuccessHandler)
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout").permitAll()
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf

@@ -1,16 +1,15 @@
-import {Component} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {Observable} from 'rxjs';
 import {AuthService} from '../../core/services/auth.service';
 import {UserProfile} from '../../core/models/user-profile.model';
-
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIf, AsyncPipe],
   templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss'],
+  styleUrls: ['./layout.component.scss', '../../styles/_auth.scss', "../../styles/styles.scss"],
 })
 export class LayoutComponent {
   isAuthenticated$: Observable<boolean>;
@@ -32,5 +31,6 @@ export class LayoutComponent {
   }
 
   register() {
-    this.authService.navigateToRegisterPage();  }
+    this.authService.navigateToRegisterPage();
+  }
 }

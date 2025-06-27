@@ -1,13 +1,12 @@
-import {ApplicationConfig, provideAppInitializer, inject} from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
-import { importProvidersFrom } from '@angular/core';
-import { OAuthModule, OAuthService } from 'angular-oauth2-oidc';
+import {ApplicationConfig, importProvidersFrom, inject, provideAppInitializer} from '@angular/core';
+import {provideRouter} from '@angular/router';
+import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
+import {provideHttpClient, withInterceptors, withXsrfConfiguration} from '@angular/common/http';
+import {OAuthModule, OAuthService} from 'angular-oauth2-oidc';
 
-import { routes } from './app.routes';
+import {routes} from './app.routes';
 
-import { environment } from '../environments/environment';
+import {environment} from '../environments/environment';
 import {authConfig} from './core/auth/auth.config';
 import {authInterceptor} from './core/interceptors/auth.interceptor';
 
@@ -25,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       OAuthModule.forRoot({
         resourceServer: {
-          allowedUrls: [environment.gatewayApiUrl],
+          allowedUrls: [environment.gatewayApiUrl, environment.authServerUrl, environment.grafanaUrl],
           sendAccessToken: true,
         },
       })
@@ -35,10 +34,17 @@ export const appConfig: ApplicationConfig = {
 
       return (async () => {
         oauthService.configure(authConfig);
-        await oauthService.loadDiscoveryDocumentAndTryLogin();
 
-        if (oauthService.hasValidAccessToken()) {
-          oauthService.setupAutomaticSilentRefresh();
+        try {
+          await oauthService.loadDiscoveryDocumentAndTryLogin();
+
+          if (oauthService.hasValidAccessToken()) {
+            oauthService.setupAutomaticSilentRefresh();
+          }
+
+          console.log('OAuth initialization completed, has valid token:', oauthService.hasValidAccessToken());
+        } catch (error) {
+          console.error('OAuth initialization failed:', error);
         }
       })();
     })
