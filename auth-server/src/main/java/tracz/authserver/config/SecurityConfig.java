@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Value("${info.cors.allowed-origins}")
     private String allowedOrigins;
@@ -93,7 +92,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/register").permitAll()
-                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/register", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
                         .requestMatchers("/.well-known/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
@@ -110,7 +109,6 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
-                        .successHandler(oAuth2LoginSuccessHandler)
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout").permitAll()

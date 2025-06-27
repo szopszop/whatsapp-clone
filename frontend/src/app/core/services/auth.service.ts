@@ -75,6 +75,7 @@ export class AuthService {
     this.router.navigate(['/']);
   }
 
+  // Wewnątrz AuthService
   private async handleAuthenticationSuccess(): Promise<void> {
     console.log('handleAuthenticationSuccess called');
 
@@ -98,9 +99,7 @@ export class AuthService {
         this.userProfileSubject.next(userProfile);
         console.log('User profile loaded:', userProfile);
 
-        this.ngZone.run(() => {
-          this.router.navigate(['/chat']);
-        });
+        this.router.navigate(['/chat']);
       }
     } catch (error) {
       console.error('Błąd podczas ładowania profilu użytkownika:', error);
@@ -117,6 +116,6 @@ export class AuthService {
   }
 
   registerApi(registerRequest: RegisterRequest): Observable<any> {
-    return this.http.post(`${environment.gatewayApiUrl}/auth/register`, registerRequest);
+    return this.http.post(`${environment.authServerUrl}/api/auth/register`, registerRequest);
   }
 }

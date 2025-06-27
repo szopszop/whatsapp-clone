@@ -61,9 +61,7 @@ export class RegisterComponent {
 
       this.authService.registerApi({email, password} as RegisterRequest).subscribe({
         next: () => {
-          this.router.navigate(['/login'], {
-            queryParams: { registered: 'true' }
-          });
+          this.router.navigate(['/']);
         },
         error: (err) => {
           this.isLoading = false;
