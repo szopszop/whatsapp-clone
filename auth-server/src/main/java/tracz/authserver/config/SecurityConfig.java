@@ -6,21 +6,18 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -28,8 +25,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
@@ -37,17 +32,24 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.*;
+import tracz.authserver.service.CustomOAuth2UserService;
 import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Value("${info.cors.allowed-origins}")
     private String allowedOrigins;
@@ -57,65 +59,65 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 new OAuth2AuthorizationServerConfigurer();
+        RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
 
         http
-                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .with(authorizationServerConfigurer, configurer ->
-                        configurer.oidc(Customizer.withDefaults())
-                )
+                .securityMatcher(endpointsMatcher)
                 .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers(HttpMethod.GET, "/oauth2/jwks").permitAll()
-                                .anyRequest().authenticated()
+                        authorize.anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
                 .exceptionHandling(exceptions ->
                         exceptions.defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
-                .oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()));
-
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .with(authorizationServerConfigurer, authServerConfig -> {
+                    authServerConfig.oidc(oidc ->
+                            oidc.userInfoEndpoint(Customizer.withDefaults())
+                    );
+                });
 
         return http.build();
     }
 
     @Bean
     @Order(2)
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher(ApiPaths.API_AUTH + "/**")
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(ApiPaths.REGISTER, ApiPaths.LOGIN, ApiPaths.REFRESH, ApiPaths.LOGOUT)
-                        .permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(Customizer.withDefaults());
-
-        return http.build();
-    }
-
-    @Bean
-    @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/error", "/webjars/**", "/assets/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/css/styles.css", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/.well-known/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(formLogin -> formLogin
+                .oauth2ResourceServer(resourceServer ->
+                        resourceServer.jwt(Customizer.withDefaults()))
+                .formLogin(form -> form
                         .loginPage("/login")
+                        .loginProcessingUrl("/login")
                         .permitAll()
-                );
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout").permitAll()
+                )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/api/auth/register"));
 
         return http.build();
     }
@@ -150,13 +152,6 @@ public class SecurityConfig {
             throw new IllegalStateException("Failed to load JWK from keystore", ex);
         }
     }
-
-
-    @Bean
-    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
-        return new JdbcRegisteredClientRepository(jdbcTemplate);
-    }
-
 
     @Bean
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
@@ -195,16 +190,16 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(
-                Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept",
-                        "Origin"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(
+                Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept",
+                        "Origin", "X-XSRF-TOKEN"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }

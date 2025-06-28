@@ -25,11 +25,26 @@ spring:
     locations: classpath:db/migration
     clean-disabled: false
     out-of-order: true
+    placeholders:
+      auth_server_internal_secret: "${AUTH_SERVER_INTERNAL_SECRET}"
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8090/
+          issuer-uri: http://localhost:8090
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid,profile,email
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+            user-name-attribute: email
   cache:
     type: redis
     cache-names:
@@ -81,6 +96,8 @@ info:
     version: "1.0.0"
   cors:
     allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
+  angular:
+    url: http://localhost:4200
 
 eureka:
   client:
@@ -121,8 +138,12 @@ management:
 logging:
   level:
     root: INFO
-    tracz:
-      authserver: DEBUG
+    tracz.authserver: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.boot.autoconfigure: WARN
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
