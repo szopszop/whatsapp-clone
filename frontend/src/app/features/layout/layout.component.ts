@@ -9,7 +9,7 @@ import {UserProfile} from '../../core/models/user-profile.model';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIf, AsyncPipe],
   templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss', "../../styles/styles.scss"],
+  styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent {
   isAuthenticated$: Observable<boolean>;

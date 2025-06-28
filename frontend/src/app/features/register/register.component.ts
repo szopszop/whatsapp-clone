@@ -10,7 +10,7 @@ import {RegisterRequest} from '../../core/models/register-request.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
   registerForm: FormGroup;
@@ -19,11 +19,11 @@ export class RegisterComponent {
   showPassword = false;
 
   passwordRequirements = [
-    { label: 'Minimum 8 znaków', check: (pwd: string) => pwd.length >= 8 },
-    { label: 'Jedna wielka litera', check: (pwd: string) => /[A-Z]/.test(pwd) },
-    { label: 'Jedna mała litera', check: (pwd: string) => /[a-z]/.test(pwd) },
-    { label: 'Jedna cyfra', check: (pwd: string) => /[0-9]/.test(pwd) },
-    { label: 'Znak specjalny', check: (pwd: string) => /[@#$%^&+=!]/.test(pwd) }
+    { label: '8 marks minimum', check: (pwd: string) => pwd.length >= 8 },
+    { label: 'One big letter', check: (pwd: string) => /[A-Z]/.test(pwd) },
+    { label: 'One small letter', check: (pwd: string) => /[a-z]/.test(pwd) },
+    { label: 'One digit', check: (pwd: string) => /[0-9]/.test(pwd) },
+    { label: 'One special character', check: (pwd: string) => /[@#$%^&+=!]/.test(pwd) }
   ];
 
   constructor(
@@ -66,11 +66,11 @@ export class RegisterComponent {
         error: (err) => {
           this.isLoading = false;
           if (err.status === 409) {
-            this.registrationError = 'Użytkownik o tym adresie email już istnieje.';
+            this.registrationError = 'User with that email already exists';
           } else if (err.status === 400) {
-            this.registrationError = 'Nieprawidłowe dane. Sprawdź wymagania dotyczące hasła.';
+            this.registrationError = 'Incorrect email or password';
           } else {
-            this.registrationError = 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.';
+            this.registrationError = 'Error occurred';
           }
         }
       });
