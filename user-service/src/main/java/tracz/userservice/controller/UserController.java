@@ -19,26 +19,23 @@ public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping(ApiPaths.USER_BY_ID)
-    public UserResponseDTO getUserById(@PathVariable("id") UUID id) {
+    @GetMapping("/id")
+    public UserResponseDTO getUserById(@RequestParam("id") UUID id) {
         return userService.findById(id);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/by-email")
     public UserResponseDTO getUserByEmail(@RequestParam("email") @Valid String email) {
         return userService.findByEmail(email);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/exists-by-email")
     public boolean checkEmailExists(@RequestParam("email") @Valid String email) {
         return userService.existsByEmail(email);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
+    @GetMapping("/getAll")
     public Page<UserResponseDTO> getAllUsers() {
         return userService.getUsers("email", 0, 25);
     }

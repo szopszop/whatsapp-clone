@@ -13,7 +13,7 @@
                         type="email"
                         formControlName="email"
                         [class.error]="email?.invalid && email?.touched"
-                        placeholder="twoj@email.com"
+                        placeholder="your@email.com"
                         [attr.aria-describedby]="email?.invalid && email?.touched ? 'email-error' : null"
                         [attr.aria-invalid]="email?.invalid && email?.touched"
                 >
@@ -31,7 +31,7 @@
                             [type]="showPassword ? 'text' : 'password'"
                             formControlName="password"
                             [class.error]="password?.invalid && password?.touched"
-                            placeholder="Wprowadź hasło"
+                            placeholder="password"
                     >
                     <button
                             type="button"

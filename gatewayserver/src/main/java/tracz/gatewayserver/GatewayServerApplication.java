@@ -33,7 +33,6 @@ public class GatewayServerApplication {
                                 .requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
                                         .setKeyResolver(userKeyResolver())))
                         .uri("lb://USER-SERVICE"))
-
                 .build();
     }
 
