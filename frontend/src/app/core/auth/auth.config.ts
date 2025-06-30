@@ -11,6 +11,6 @@ export const authConfig: AuthConfig = {
   //requireHttps: environment.production,
   silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
   silentRefreshTimeout: 5000,
-  clearHashAfterLogin: false,
+  clearHashAfterLogin: true,
   silentRefreshShowIFrame: false,
 };

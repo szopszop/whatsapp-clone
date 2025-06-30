@@ -36,7 +36,8 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:4200}")
     private String[] allowedOrigins;
 
-    private static final String INTERNAL_USERS_PATH = "/api/internal/users";
+    // Ścieżka do wewnętrznego API używanego przez auth-server
+    private static final String INTERNAL_USERS_PATH = InternalApiPaths.USERS + "/**"; // np. /internal/api/v1/users/**
 
     @Bean
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
@@ -46,8 +47,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, INTERNAL_USERS_PATH).hasAuthority("SCOPE_internal.user.read")
-                        .requestMatchers(HttpMethod.GET, INTERNAL_USERS_PATH + "/**").hasAuthority("SCOPE_internal.user.read")
+                        //.requestMatchers(HttpMethod.POST, INTERNAL_USERS_PATH).hasAuthority("SCOPE_internal.user.write")
+                        .requestMatchers(HttpMethod.POST, INTERNAL_USERS_PATH).permitAll()
+                        .requestMatchers(HttpMethod.GET, INTERNAL_USERS_PATH + "/**").hasAuthority("SCOPE_internal.user.write")
 
                         .requestMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

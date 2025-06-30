@@ -95,7 +95,7 @@ info:
     description: "Auth server app"
     version: "1.0.0"
   cors:
-    allowed-origins: http://localhost:3000 http://localhost:4200 https://oauth.pstmn.io
+    allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
   angular:
     url: ${ANGULAR_URL:http://localhost:4200}
 
