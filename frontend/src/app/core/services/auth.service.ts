@@ -7,6 +7,7 @@ import {environment} from '../../../environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {RegisterRequest} from '../models/register-request.model';
 import {IdentityClaims} from '../models/identity-claims.model';
+import { ToastrService } from 'ngx-toastr';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,8 @@ export class AuthService {
     private oauthService: OAuthService,
     private router: Router,
     private http: HttpClient,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private toastr: ToastrService
   ) {
     this.isAdmin$ = this.userProfile$.pipe(
       map(profile => profile?.roles?.includes('ROLE_ADMIN') ?? false)
@@ -39,17 +41,14 @@ export class AuthService {
         switch (event.type) {
           case 'token_received':
           case 'token_refreshed':
-            console.log('Token received or refreshed');
             this.handleAuthenticationSuccess();
             break;
           case 'logout':
           case 'token_expires':
           case 'token_error':
-            console.log('Token expired or error');
             this.handleAuthenticationFailure();
             break;
           case 'discovery_document_loaded':
-            console.log('Discovery document loaded');
             if (this.oauthService.hasValidAccessToken()) {
               this.handleAuthenticationSuccess();
             }
@@ -59,7 +58,6 @@ export class AuthService {
     });
 
     if (this.oauthService.hasValidAccessToken()) {
-      console.log('Token is valid on init');
       this.handleAuthenticationSuccess();
     }
   }
@@ -75,16 +73,13 @@ export class AuthService {
     this.router.navigate(['/']);
   }
 
-  // Wewnątrz AuthService
   private async handleAuthenticationSuccess(): Promise<void> {
-    console.log('handleAuthenticationSuccess called');
-
     if (this.isAuthenticatedSubject.value) {
       return;
     }
 
     this.isAuthenticatedSubject.next(true);
-
+    this.toastr.success('Logged in successfully');
     try {
       const claims = this.oauthService.getIdentityClaims() as IdentityClaims;
       if (claims) {
@@ -97,12 +92,10 @@ export class AuthService {
           roles: claims.roles || []
         };
         this.userProfileSubject.next(userProfile);
-        console.log('User profile loaded:', userProfile);
-
         this.router.navigate(['/chat']);
       }
     } catch (error) {
-      console.error('Błąd podczas ładowania profilu użytkownika:', error);
+      this.toastr.error('Error occurred while loading user profile');
     }
   }
 

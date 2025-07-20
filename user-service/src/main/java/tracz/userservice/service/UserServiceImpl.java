@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import tracz.userservice.dto.UserCreationRequestDTO;
-import tracz.userservice.dto.UserResponseDTO;
+import tracz.userservice.dto.*;
 import tracz.userservice.entity.User;
+import tracz.userservice.entity.UserStatus;
 import tracz.userservice.exception.ResourceNotFoundException;
 import tracz.userservice.exception.UserAlreadyExistsException;
 import tracz.userservice.mapper.UserMapper;
@@ -24,8 +24,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserResponseDTO findById(UUID id) {
-        User user = userRepository.findById(id)
+    public UserResponseDTO findByAuthServerUserId(UUID id) {
+        User user = userRepository.findByAuthServerUserId(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.USER_NOT_FOUND));
         return UserMapper.userToDto(user);
     }
@@ -40,24 +40,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
-    }
-
-    @Override
-    public Page<UserResponseDTO> getUsers(String email, Integer pageNumber, Integer pageSize) {
-        int defaultPage = 0;
-        int defaultSize = 25;
-
-        int validPage = (pageNumber == null || pageNumber < 0) ? defaultPage : pageNumber;
-        int validSize = (pageSize == null || pageSize <= 0) ? defaultSize : pageSize;
-
-        PageRequest pageRequest = PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.ASC, "email"));
-
-        Page<User> userPage = Optional.ofNullable(email)
-                .filter(e -> !e.trim().isEmpty())
-                .map(e -> userRepository.findByEmailContainingIgnoreCase(e, pageRequest))
-                .orElseGet(() -> userRepository.findAll(pageRequest));
-
-        return userPage.map(UserMapper::userToDto);
     }
 
     @Override
@@ -79,4 +61,50 @@ public class UserServiceImpl implements UserService {
         return UserMapper.userToDto(savedNewUser);
     }
 
+    @Override
+    public Page<UserResponseDTO> searchUsers(String email, Integer pageNumber, Integer pageSize) {
+        int defaultPage = 0;
+        int defaultSize = 25;
+
+        int validPage = (pageNumber == null || pageNumber < 0) ? defaultPage : pageNumber;
+        int validSize = (pageSize == null || pageSize <= 0) ? defaultSize : pageSize;
+
+        PageRequest pageRequest = PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.ASC, "email"));
+
+        Page<User> userPage = Optional.ofNullable(email)
+                .filter(e -> !e.trim().isEmpty())
+                .map(e -> userRepository.findByEmailContainingIgnoreCase(e, pageRequest))
+                .orElseGet(() -> userRepository.findAll(pageRequest));
+
+        return userPage.map(UserMapper::userToDto);
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO updateMyProfile(UUID authUserId, UserProfileUpdateDTO updateDTO) {
+        User userToUpdate = findUserByAuthIdOrThrow(authUserId);
+        UserMapper.updateFromDto(updateDTO, userToUpdate);
+        User updatedUser = userRepository.save(userToUpdate);
+        log.info("Profile for user {} updated.", updatedUser.getEmail());
+        return UserMapper.userToDto(updatedUser);
+    }
+
+    @Override
+    @Transactional
+    public void updateUserStatus(UUID authUserId, UserStatusUpdateDTO statusUpdateDTO) {
+        User user = findUserByAuthIdOrThrow(authUserId);
+        user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
+        userRepository.save(user);
+        log.info("Status for user {} updated to {}.", user.getEmail(), statusUpdateDTO.status());
+    }
+
+    private User findUserByIdOrThrow(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
+    private User findUserByAuthIdOrThrow(UUID authId) {
+        return userRepository.findByAuthServerUserId(authId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with authId: " + authId));
+    }
 }

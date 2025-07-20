@@ -137,7 +137,6 @@ management:
 
 logging:
   level:
-    root: DEBUG
     tracz.authserver: DEBUG
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG

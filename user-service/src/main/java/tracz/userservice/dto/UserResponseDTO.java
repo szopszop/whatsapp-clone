@@ -11,5 +11,7 @@ public record UserResponseDTO(
         Set<String> roles,
         Instant createdAt,
         String firstName,
-        String lastName
+        String lastName,
+        String profilePictureUrl,
+        String about
 ) {}

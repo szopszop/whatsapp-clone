@@ -32,7 +32,9 @@ public class GatewayServerApplication {
                                 .addResponseHeader("X-Response-Time", LocalDateTime.now().toString())
                                 .requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
                                         .setKeyResolver(userKeyResolver())))
-                        .uri("lb://USER-SERVICE"))
+                        .uri("lb://USER-SERVICE")
+                )
+
                 .build();
     }
 
