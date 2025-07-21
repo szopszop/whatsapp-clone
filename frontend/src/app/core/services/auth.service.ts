@@ -7,6 +7,7 @@ import {environment} from '../../../environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {RegisterRequest} from '../models/register-request.model';
 import {IdentityClaims} from '../models/identity-claims.model';
+
 import { ToastrService } from 'ngx-toastr';
 
 @Injectable({
@@ -27,6 +28,8 @@ export class AuthService {
     private http: HttpClient,
     private ngZone: NgZone,
     private toastr: ToastrService
+    private ngZone: NgZone
+
   ) {
     this.isAdmin$ = this.userProfile$.pipe(
       map(profile => profile?.roles?.includes('ROLE_ADMIN') ?? false)
@@ -74,12 +77,14 @@ export class AuthService {
   }
 
   private async handleAuthenticationSuccess(): Promise<void> {
+
     if (this.isAuthenticatedSubject.value) {
       return;
     }
 
     this.isAuthenticatedSubject.next(true);
     this.toastr.success('Logged in successfully');
+
     try {
       const claims = this.oauthService.getIdentityClaims() as IdentityClaims;
       if (claims) {
@@ -96,6 +101,7 @@ export class AuthService {
       }
     } catch (error) {
       this.toastr.error('Error occurred while loading user profile');
+
     }
   }
 

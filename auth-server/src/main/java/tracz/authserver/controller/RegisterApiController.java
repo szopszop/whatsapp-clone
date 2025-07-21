@@ -5,12 +5,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tracz.authserver.dto.*;
+import tracz.authserver.dto.AuthUserDTO;
+import tracz.authserver.dto.RegisterRequest;
 import tracz.authserver.service.AuthUserService;
 
 @RequestMapping("/api/auth")

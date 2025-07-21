@@ -137,11 +137,12 @@ management:
 
 logging:
   level:
+    root: INFO
     tracz.authserver: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
     org.springframework.boot.autoconfigure: WARN
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

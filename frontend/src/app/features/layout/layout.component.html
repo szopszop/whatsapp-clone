@@ -1,6 +1,9 @@
 <div class="auth-container">
   <header class="navbar">
-    <a class="navbar-brand" routerLink="/">Chat App</a>
+
+    <a class="navbar-brand" routerLink="/chat">
+      <a routerLink="/">Chat App</a>
+    </a>
     <div class="navbar-links">
       <ng-container *ngIf="isAuthenticated$ | async; else guestLinks">
         <a routerLink="/chat" routerLinkActive="active-link">Chat</a>

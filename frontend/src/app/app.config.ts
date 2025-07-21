@@ -9,6 +9,7 @@ import {routes} from './app.routes';
 import {environment} from '../environments/environment';
 import {authConfig} from './core/auth/auth.config';
 import {authInterceptor} from './core/interceptors/auth.interceptor';
+
 import {provideToastr} from 'ngx-toastr';
 
 export const appConfig: ApplicationConfig = {
