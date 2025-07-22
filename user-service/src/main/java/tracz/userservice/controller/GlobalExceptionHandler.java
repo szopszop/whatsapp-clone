@@ -14,11 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tracz.userservice.config.ExceptionMessages;
 import tracz.userservice.dto.ErrorDTO;
-import tracz.userservice.exception.TooManyRequestsException;
-import tracz.userservice.exception.UserAlreadyExistsException;
+import tracz.userservice.exception.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import static org.apache.commons.lang3.stream.LangCollectors.collect;
 
 @Slf4j
 @RestControllerAdvice
@@ -47,6 +48,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ErrorDTO, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorDTO> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return buildErrorDTOResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorDTO> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        return buildErrorDTOResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorDTO> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
         log.warn("User registration conflict: {}", ex.getMessage());
@@ -56,8 +69,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorDTO> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
         log.warn("Constraint violation: {}", ex.getMessage());
-        return buildErrorDTOResponseEntity(HttpStatus.BAD_REQUEST,
-                "Constraint Violation: " + ex.getConstraintViolations(), request);
+        String violations = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .collect(Collectors.joining(", "));
+        return buildErrorDTOResponseEntity(HttpStatus.BAD_REQUEST, "Constraint Violation: " + violations, request);
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -96,7 +111,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildErrorDTOResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR,
                 ExceptionMessages.INTERNAL_ERROR, request);
     }
-
 
 
     private ResponseEntity<ErrorDTO> buildErrorDTOResponseEntity(HttpStatus status, String message, WebRequest request) {

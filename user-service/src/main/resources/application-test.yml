@@ -16,7 +16,7 @@ spring:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:

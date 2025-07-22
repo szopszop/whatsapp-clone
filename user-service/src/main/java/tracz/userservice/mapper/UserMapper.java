@@ -44,8 +44,8 @@ public class UserMapper {
         if (updateDTO.lastName() != null) {
             userToUpdate.setLastName(updateDTO.lastName());
         }
-        if (updateDTO.profileImageUrl() != null) {
-            userToUpdate.setProfilePictureUrl(updateDTO.profileImageUrl());
+        if (updateDTO.profilePictureUrl() != null) {
+            userToUpdate.setProfilePictureUrl(updateDTO.profilePictureUrl());
         }
         if (updateDTO.about() != null) {
             userToUpdate.setAbout(updateDTO.about());

@@ -31,7 +31,9 @@ public class User extends BaseEntity {
 
     private String firstName;
     private String lastName;
+    @Size(max = 255)
     private String profilePictureUrl;
+    @Size(max = 500)
     private String about;
 
     @Enumerated(EnumType.STRING)

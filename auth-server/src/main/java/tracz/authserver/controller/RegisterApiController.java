@@ -27,7 +27,7 @@ public class RegisterApiController {
             description = "Creates a new user account in the auth-server.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "User created successfully",
-                    content = @Content(schema = @Schema(implementation = RegisterRequest.class))),
+                    content = @Content(schema = @Schema(implementation = AuthUserDTO.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
             @ApiResponse(responseCode = "409", description = "User with this email already exists",

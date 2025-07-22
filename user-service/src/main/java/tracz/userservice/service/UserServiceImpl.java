@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByAuthServerUserId(creationRequest.authUserId())) {
             log.warn("User {} with authServerId {} already exists in DB ",
                     creationRequest.email(), creationRequest.authUserId());
+            throw new UserAlreadyExistsException("User with authServerId " + creationRequest.authUserId() + " already exists in DB");
         }
         User savedNewUser = userRepository.save(UserMapper.dtoToUser(creationRequest));
         log.info("User {} (authId:  {}) created successfully",
@@ -93,14 +94,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUserStatus(UUID authUserId, UserStatusUpdateDTO statusUpdateDTO) {
         User user = findUserByAuthIdOrThrow(authUserId);
-        user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
+        try {
+            user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
+        }catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status value: " + statusUpdateDTO.status());
+        }
         userRepository.save(user);
         log.info("Status for user {} updated to {}.", user.getEmail(), statusUpdateDTO.status());
-    }
-
-    private User findUserByIdOrThrow(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     private User findUserByAuthIdOrThrow(UUID authId) {

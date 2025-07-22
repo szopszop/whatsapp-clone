@@ -21,6 +21,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.*;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Slf4j
@@ -45,9 +47,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        //.requestMatchers(HttpMethod.POST, INTERNAL_USERS_PATH).hasAuthority("SCOPE_internal.user.write")
-                        .requestMatchers(HttpMethod.POST, INTERNAL_API_PATH).permitAll()
-                        .requestMatchers(HttpMethod.GET, INTERNAL_API_PATH + "/**").hasAuthority("SCOPE_internal.user.write")
+                        .requestMatchers(HttpMethod.POST, INTERNAL_API_PATH).hasAuthority("SCOPE_internal.user.write")                        .requestMatchers(HttpMethod.GET, INTERNAL_API_PATH + "/**").hasAuthority("SCOPE_internal.user.write")
 
                         .requestMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
@@ -83,29 +83,22 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
 
-        authoritiesConverter.setAuthorityPrefix("ROLE_");
-        authoritiesConverter.setAuthoritiesClaimName("role");
-
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Collection<GrantedAuthority> scopeAuthorities = authoritiesConverter.convert(jwt);
-            Collection<GrantedAuthority> roleAuthorities = extractRoleAuthorities(jwt);
-
-            scopeAuthorities.addAll(roleAuthorities);
-            return scopeAuthorities;
-        });
-
-        return converter;
-    }
-
-    private Collection<GrantedAuthority> extractRoleAuthorities(org.springframework.security.oauth2.jwt.Jwt jwt) {
         JwtGrantedAuthoritiesConverter roleConverter = new JwtGrantedAuthoritiesConverter();
         roleConverter.setAuthorityPrefix("ROLE_");
         roleConverter.setAuthoritiesClaimName("roles");
 
-        return roleConverter.convert(jwt);
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Collection<GrantedAuthority> scopeAuthorities = scopeConverter.convert(jwt);
+            Collection<GrantedAuthority> roleAuthorities = roleConverter.convert(jwt);
+
+            return Stream.concat(scopeAuthorities.stream(), roleAuthorities.stream())
+                    .collect(Collectors.toSet());
+        });
+
+        return converter;
     }
 
     @Bean
