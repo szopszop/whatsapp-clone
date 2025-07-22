@@ -1,0 +1,52 @@
+$blue: #536DFE;
+$white-blue: #B1BCFF;
+$blue-white: #F3F5FF;
+$pink: #ff4081;
+$dark-pink: #ff0f60;
+$green: #31C2A0;
+$white: white;
+
+@mixin toastr-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+@mixin toastr($color) {
+  position: relative;
+  overflow: hidden;
+  margin: 16px 0 6px 0;
+  pointer-events: all;
+  cursor: pointer;
+  width: 257px;
+  color: $white;
+  display: flex;
+  align-items: center;
+  background-color: $color;
+  height: 45px;
+}
+
+@mixin toastr-wrapper-icon {
+  color: rgba($white, 0.8);
+  height: 45px;
+  width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin toastr-content {
+  display: flex;
+  align-items: center;
+}
+
+@mixin toastr-content-title {
+  margin: 0;
+}
+
+@mixin toastr-icon {
+  padding: 0;
+  width: auto;
+  height: auto;
+}

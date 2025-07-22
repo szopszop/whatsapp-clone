@@ -14,8 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tracz.authserver.config.ExceptionMessages;
 import tracz.authserver.dto.ErrorDTO;
-import tracz.authserver.exception.TooManyRequestsException;
-import tracz.authserver.exception.UserAlreadyExistsException;
+import tracz.authserver.exception.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +22,6 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -46,6 +44,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
         log.error("Validation failed for request {}: {}", request.getDescription(false), errors);
         return new ResponseEntity<>(ErrorDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorDTO> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return buildErrorDTOResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorDTO> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        return buildErrorDTOResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

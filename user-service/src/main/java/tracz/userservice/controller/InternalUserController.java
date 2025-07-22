@@ -8,21 +8,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import tracz.userservice.config.ApiPaths;
-import tracz.userservice.config.InternalApiPaths;
 import tracz.userservice.dto.*;
 import tracz.userservice.service.UserService;
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(InternalApiPaths.USERS)
+@RequestMapping("/internal/api/v1/users/")
 public class InternalUserController {
 
     private final UserService userService;

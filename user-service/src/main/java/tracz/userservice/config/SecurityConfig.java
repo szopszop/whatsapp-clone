@@ -1,12 +1,11 @@
-package tracz.userservice.config; // Upewnij się, że nazwa pakietu jest poprawna dla user-service
+package tracz.userservice.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,123 +13,115 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import org.springframework.web.cors.*;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+
+@Slf4j
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true) // Włącz adnotacje @Secured, @RolesAllowed
+@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") // Pobierz URI wystawcy z application.yml
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:4200}") // Domyślne dozwolone źródła
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:4200}")
     private String[] allowedOrigins;
 
-    // Ścieżka do wewnętrznego API używanego przez auth-server
-    private static final String INTERNAL_USERS_PATH = InternalApiPaths.USERS + "/**"; // np. /internal/api/v1/users/**
+    private static final String INTERNAL_API_PATH = "/internal/api/v1/users/**";
 
     @Bean
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
+
         http
-                .csrf(AbstractHttpConfigurer::disable) // Wyłącz CSRF dla bezstanowego API
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Konfiguracja CORS
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Zezwól na dostęp do wewnętrznego endpointu provisionUser bez uwierzytelnienia JWT
-                        // Zakładamy, że ten endpoint jest chroniony na poziomie sieciowym (np. dostępny tylko dla auth-server)
-                        .requestMatchers(HttpMethod.POST, InternalApiPaths.USERS).permitAll() // np. POST /internal/api/v1/users
-                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Zezwól na dostęp do Actuatora i Swaggera
-                        // Przykładowe zabezpieczenie innych endpointów
-                        // .requestMatchers(HttpMethod.GET, "/api/v1/users/me").hasRole("USER")
-                        // .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasRole("ADMIN")
-                        .anyRequest().authenticated() // Wszystkie inne żądania wymagają uwierzytelnienia
+                        .requestMatchers(HttpMethod.POST, INTERNAL_API_PATH).hasAuthority("SCOPE_internal.user.write")                        .requestMatchers(HttpMethod.GET, INTERNAL_API_PATH + "/**").hasAuthority("SCOPE_internal.user.write")
+
+                        .requestMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/error", "/favicon.ico").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/me").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/me").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasRole("ADMIN")
+
+                        .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Bezstanowe sesje
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
-                                .decoder(jwtDecoder()) // Użyj niestandardowego dekodera JWT
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter()) // Konwerter do ekstrakcji ról
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
                 )
-                // Możesz dodać niestandardową obsługę błędów uwierzytelniania/autoryzacji, jeśli jest potrzebna
-                // np. .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(...).accessDeniedHandler(...))
-                // Jednak @RestControllerAdvice z GlobalExceptionHandler powinien obsłużyć większość przypadków dla REST API.
                 .exceptionHandling(Customizer.withDefaults());
-
 
         return http.build();
     }
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Konfiguracja dekodera JWT na podstawie URI wystawcy (auth-server)
-        // NimbusJwtDecoder pobierze JWK set z endpointu .well-known/jwks.json wystawcy
         return NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
-        // Alternatywnie, jeśli masz jwk-set-uri:
-        // return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        // Konfiguracja konwertera do mapowania claimów JWT (np. "roles" lub "scope") na GrantedAuthority
-        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRealmRoleConverter()); // Użyj niestandardowego konwertera
-        // Możesz także ustawić principal claim name, jeśli nie jest to "sub"
-        // converter.setPrincipalClaimName("preferred_username");
-        return converter;
-    }
+        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
 
-    // Niestandardowy konwerter do ekstrakcji ról z claimu "roles" (lub innego, np. "realm_access.roles" dla Keycloak)
-    // Dostosuj ten konwerter do struktury Twoich tokenów JWT z auth-server
-    public static class KeycloakRealmRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
-        @Override
-        public Collection<GrantedAuthority> convert(Jwt jwt) {
-            final List<String> roles = jwt.getClaimAsStringList("roles"); // Zakładamy, że role są w claimie "roles" jako lista stringów
-            if (roles == null || roles.isEmpty()) {
-                // Możesz także sprawdzić claim "scope" lub "scp" jeśli role są tam przekazywane
-                // List<String> scopes = jwt.getClaimAsStringList("scope");
-                // if (scopes != null) {
-                //     return scopes.stream()
-                //         .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope.toUpperCase()))
-                //         .collect(Collectors.toList());
-                // }
-                return Collections.emptyList();
-            }
-            return roles.stream()
-                    // Możesz chcieć dodać prefiks "ROLE_", jeśli Twoje adnotacje @Secured lub @RolesAllowed tego oczekują
-                    // i jeśli auth-server nie dodaje go automatycznie.
-                    // W poprzednim auth-server SecurityConfig, OAuth2TokenCustomizer dodawał role bez prefiksu.
-                    .map(roleName -> new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase()))
-                    // lub bez prefiksu, jeśli tak wolisz: .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-        }
+        JwtGrantedAuthoritiesConverter roleConverter = new JwtGrantedAuthoritiesConverter();
+        roleConverter.setAuthorityPrefix("ROLE_");
+        roleConverter.setAuthoritiesClaimName("roles");
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Collection<GrantedAuthority> scopeAuthorities = scopeConverter.convert(jwt);
+            Collection<GrantedAuthority> roleAuthorities = roleConverter.convert(jwt);
+
+            return Stream.concat(scopeAuthorities.stream(), roleAuthorities.stream())
+                    .collect(Collectors.toSet());
+        });
+
+        return converter;
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept", "Origin"));
-        configuration.setAllowCredentials(true); // Ustaw na true, jeśli frontend wysyła credentials (np. cookies)
-        configuration.setMaxAge(3600L); // 1 godzina
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Cache-Control",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "X-XSRF-TOKEN"
+        ));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
