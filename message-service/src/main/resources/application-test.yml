@@ -1,32 +1,17 @@
 server:
-  port: 8080
+  port: 9010
 
 spring:
   application:
-    name: user-service
-  datasource:
-    url: jdbc:postgresql://localhost:5430/${USER_SERVICE_DB_NAME}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+    name: message-service
+  data:
+    mongodb:
+      uri: "${MONGO_DB_URI:mongodb://localhost:27017/whatsapp_messages}"
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    baseline-version: 0
-    locations: classpath:db/migration
-    schemas: public
 
 eureka:
   client:
@@ -39,8 +24,8 @@ eureka:
 #Eureka dashboard
 info:
   app:
-    name: "user-service"
-    description: "User service app (Development Profile)"
+    name: "message-service"
+    description: "Message service app (Development Profile)"
     version: "1.0.0-DEV"
 
 
@@ -75,6 +60,6 @@ logging:
   level:
     root: INFO
     tracz:
-      userservice: DEBUG
+      messageservice: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

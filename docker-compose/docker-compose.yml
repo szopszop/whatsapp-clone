@@ -38,10 +38,21 @@ services:
   message-service-db:
     extends:
       file: common-config.yml
-      service: microservice-db-config
+      service: network-deploy-service
+    image: mongo:latest
     container_name: message-service-db
     environment:
-      POSTGRES_DB: ${MESSAGE_SERVICE_DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MESSAGE_SERVICE_DB_NAME}
+    volumes:
+      - ./mongo-data:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   configserver:
     extends:
@@ -139,17 +150,15 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
-      auth-server:
-        condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9010/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 10s
     environment:
       SPRING_APPLICATION_NAME: message-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://message-service-db:5432/${MESSAGE_SERVICE_DB_NAME}
+      MONGO_DB_URI: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@message-service-db:27017/${MESSAGE_SERVICE_DB_NAME}?authSource=admin
       OTEL_SERVICE_NAME: message-service
 
   gatewayserver:
