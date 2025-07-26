@@ -1,7 +1,6 @@
 package tracz.userservice.service;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +100,16 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
         log.info("Status for user {} updated to {}.", user.getEmail(), statusUpdateDTO.status());
+    }
+
+    @Override
+    public void addFcmToken(UUID userId, String token) {
+
+    }
+
+    @Override
+    public Set<String> getFcmTokens(UUID userId) {
+        return Set.of();
     }
 
     private User findUserByAuthIdOrThrow(UUID authId) {

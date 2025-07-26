@@ -16,7 +16,7 @@ spring:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -34,7 +34,8 @@ eureka:
     registerWithEureka: true
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
-
+  instance:
+    hostname: user-service
 
 #Eureka dashboard
 info:

@@ -2,11 +2,11 @@ package tracz.messageservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import tracz.messageservice.dto.MessageDTO;
-import tracz.messageservice.dto.SendMessageRequestDTO;
+import tracz.messageservice.dto.*;
 import tracz.messageservice.entity.Message;
 import tracz.messageservice.mapper.MessageMapper;
 import tracz.messageservice.repository.MessageRepository;
@@ -24,7 +24,10 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final RabbitTemplate rabbitTemplate;
+
+    public static final String NOTIFICATION_EXCHANGE = "notification.exchange";
+    public static final String MESSAGE_ROUTING_KEY = "message.sent";
 
     @Override
     public MessageDTO sendMessage(SendMessageRequestDTO requestDTO, UUID senderId) {
@@ -40,13 +43,17 @@ public class MessageServiceImpl implements MessageService {
 
         MessageDTO messageDTO = messageMapper.toDto(savedMessage);
 
-        messagingTemplate.convertAndSendToUser(
-                requestDTO.recipientId().toString(),
-                "/queue/messages",
-                messageDTO
+        MessageNotificationEvent event = new MessageNotificationEvent(
+                messageDTO.id(),
+                messageDTO.conversationId(),
+                messageDTO.senderId(),
+                messageDTO.recipientId(),
+                messageDTO.content(),
+                messageDTO.createdAt()
         );
-        log.info("Message {} sent to recipient {} via WebSocket", savedMessage.getId(), requestDTO.recipientId());
 
+        rabbitTemplate.convertAndSend(NOTIFICATION_EXCHANGE, MESSAGE_ROUTING_KEY, event);
+        log.info("Published notification event for message id: {}", savedMessage.getId());
         return messageDTO;
     }
 

@@ -25,8 +25,6 @@ spring:
     locations: classpath:db/migration
     clean-disabled: false
     out-of-order: true
-    placeholders:
-      auth_server_internal_secret: "${AUTH_SERVER_INTERNAL_SECRET}"
   security:
     oauth2:
       resourceserver:
@@ -56,6 +54,12 @@ spring:
 auth-server:
   internal:
     client-secret: ${AUTH_SERVER_INTERNAL_SECRET}
+    user-service:
+      client-secret: ${USER_SERVICE_CLIENT_SECRET}
+    message-service:
+      client-secret: ${MESSAGE_SERVICE_CLIENT_SECRET}
+    notification-service:
+      client-secret: ${NOTIFICATION_SERVICE_CLIENT_SECRET}
   jwk:
     keystore-path: "classpath:jwk.jks"
     keystore-password: ${KEYSTORE_PASSWORD}
@@ -91,7 +95,7 @@ resilience4j.ratelimiter:
 #Eureka dashboard
 info:
   app:
-    name: "auth-server"
+    name: auth-server
     description: "Auth server app"
     version: "1.0.0"
   cors:
@@ -105,7 +109,8 @@ eureka:
     registerWithEureka: true
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
-
+  instance:
+    hostname: auth-server
 
 
 #Actuator

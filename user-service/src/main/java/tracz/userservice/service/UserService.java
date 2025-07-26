@@ -1,5 +1,6 @@
 package tracz.userservice.service;
 
+import java.util.Set;
 import java.util.UUID;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -15,4 +16,7 @@ public interface UserService {
     UserResponseDTO updateMyProfile(UUID authUserId, UserProfileUpdateDTO updateDTO);
     void updateUserStatus(UUID authUserId, UserStatusUpdateDTO statusUpdateDTO);
 
+    void addFcmToken(UUID userId, String token);
+
+    Set<String> getFcmTokens(UUID userId);
 }

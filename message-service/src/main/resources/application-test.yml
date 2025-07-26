@@ -12,6 +12,8 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+  rabbitmq:
+    host: rabbitmq
 
 eureka:
   client:
@@ -19,7 +21,8 @@ eureka:
     registerWithEureka: true
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
-
+  instance:
+    hostname: message-service
 
 #Eureka dashboard
 info:

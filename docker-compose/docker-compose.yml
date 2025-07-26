@@ -18,6 +18,16 @@ services:
       timeout: 10s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
 
   auth-server-db:
     extends:
@@ -171,6 +181,8 @@ services:
       auth-server:
         condition: service_healthy
       user-service:
+        condition: service_healthy
+      message-service:
         condition: service_healthy
       gateway-redis:
         condition: service_healthy

@@ -73,7 +73,7 @@ resilience4j.ratelimiter:
 #Eureka dashboard
 info:
   app:
-    name: "auth-server"
+    name: auth-server
     description: "Auth server app"
     version: "1.0.0"
   cors:
@@ -85,7 +85,8 @@ eureka:
     registerWithEureka: true
     serviceUrl:
       defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
-
+  instance:
+    hostname: auth-server
 
 #Actuator
 management:
