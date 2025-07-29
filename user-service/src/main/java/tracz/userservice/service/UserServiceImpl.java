@@ -21,6 +21,8 @@ import tracz.userservice.config.ExceptionMessages;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserEventPublisher userEventPublisher; // Wstrzyknięty publisher
+
 
     @Override
     public UserResponseDTO findByAuthServerUserId(UUID id) {
@@ -93,13 +95,22 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUserStatus(UUID authUserId, UserStatusUpdateDTO statusUpdateDTO) {
         User user = findUserByAuthIdOrThrow(authUserId);
-        try {
-            user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
-        }catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + statusUpdateDTO.status());
-        }
+        user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
         userRepository.save(user);
         log.info("Status for user {} updated to {}.", user.getEmail(), statusUpdateDTO.status());
+
+        userEventPublisher.publishUserStatusUpdated(
+                new UserStatusUpdatedEvent(authUserId, statusUpdateDTO.status())
+        );
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserByAuthId(UUID authUserId) {
+        User user = findUserByAuthIdOrThrow(authUserId);
+        userRepository.delete(user);
+        log.info("User with email {} (authId: {}) deleted successfully from user-service.",
+                user.getEmail(), authUserId);
     }
 
     @Override

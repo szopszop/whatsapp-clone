@@ -19,4 +19,6 @@ public interface UserService {
     void addFcmToken(UUID userId, String token);
 
     Set<String> getFcmTokens(UUID userId);
+
+    void deleteUserByAuthId(UUID uuid);
 }

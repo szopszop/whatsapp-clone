@@ -1,4 +1,4 @@
-package tracz.notificationservice.config;
+package tracz.authserver.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;

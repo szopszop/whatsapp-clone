@@ -32,7 +32,7 @@ services:
   auth-server-db:
     extends:
       file: common-config.yml
-      service: microservice-db-config
+      service: microservice-db-postgres-config
     container_name: auth-server-db
     environment:
       POSTGRES_DB: ${AUTH_SERVER_DB_NAME}
@@ -40,7 +40,7 @@ services:
   user-service-db:
     extends:
       file: common-config.yml
-      service: microservice-db-config
+      service: microservice-db-postgres-config
     container_name: user-service-db
     environment:
       POSTGRES_DB: ${USER_SERVICE_DB_NAME}
@@ -124,7 +124,6 @@ services:
       OTEL_SERVICE_NAME: auth-server
 
 
-
   user-service:
     extends:
       file: common-config.yml
@@ -170,6 +169,25 @@ services:
       SPRING_APPLICATION_NAME: message-service
       MONGO_DB_URI: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@message-service-db:27017/${MESSAGE_SERVICE_DB_NAME}?authSource=admin
       OTEL_SERVICE_NAME: message-service
+
+  notification-service:
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
+    image: "szopszop/notification-service"
+    container_name: notification-service
+    depends_on:
+      eurekaserver:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9020/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      SPRING_APPLICATION_NAME: notification-service
+      OTEL_SERVICE_NAME: notification-service
 
   gatewayserver:
     extends:

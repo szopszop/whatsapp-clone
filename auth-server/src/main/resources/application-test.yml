@@ -49,7 +49,11 @@ spring:
       - buckets
     redis:
       time-to-live: 600000
-
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: guest
+    password: guest
 
 auth-server:
   internal:

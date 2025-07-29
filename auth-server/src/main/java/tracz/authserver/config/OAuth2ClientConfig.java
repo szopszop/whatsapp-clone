@@ -138,7 +138,6 @@ public class OAuth2ClientConfig {
                 .build();
     }
 
-
     private RegisteredClient createNotificationServiceClient() {
         return RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("notification-service")

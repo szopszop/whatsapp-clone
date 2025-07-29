@@ -27,6 +27,11 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
     schemas: public
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: guest
+    password: guest
 
 eureka:
   client:

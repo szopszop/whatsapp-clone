@@ -3,7 +3,7 @@ services:
     networks:
       - szopnet
 
-  microservice-db-config:
+  microservice-db-postgres-config:
     extends:
       service:
         network-deploy-service
