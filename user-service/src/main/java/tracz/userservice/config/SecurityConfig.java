@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.GET, INTERNAL_API_PATH + "/**").hasAuthority("SCOPE_internal.user.read")
                         .requestMatchers(HttpMethod.POST, INTERNAL_API_PATH).hasAuthority("SCOPE_internal.user.write")                        .requestMatchers(HttpMethod.GET, INTERNAL_API_PATH + "/**").hasAuthority("SCOPE_internal.user.write")
 
                         .requestMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()

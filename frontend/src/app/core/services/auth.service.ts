@@ -28,7 +28,6 @@ export class AuthService {
     private http: HttpClient,
     private ngZone: NgZone,
     private toastr: ToastrService
-    private ngZone: NgZone
 
   ) {
     this.isAdmin$ = this.userProfile$.pipe(

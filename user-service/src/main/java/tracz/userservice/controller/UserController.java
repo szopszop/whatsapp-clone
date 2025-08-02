@@ -5,12 +5,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import tracz.userservice.config.ApiPaths;
 import tracz.userservice.dto.*;
 import tracz.userservice.exception.BadRequestException;
 import tracz.userservice.service.UserService;
@@ -18,7 +17,7 @@ import tracz.userservice.service.UserService;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(ApiPaths.USER_API)
+@RequestMapping("/api/v1/user")
 public class UserController {
 
     private final UserService userService;
@@ -56,6 +55,13 @@ public class UserController {
         UUID authUserId = getAuthUserIdFromJwt(jwt);
         UserResponseDTO updatedUser = userService.updateMyProfile(authUserId, updateDTO);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/me/fcm-token")
+    @ResponseStatus(HttpStatus.OK)
+    public void addFcmToken(@RequestBody String token, @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        userService.addFcmToken(userId, token);
     }
 
     @GetMapping("/search")

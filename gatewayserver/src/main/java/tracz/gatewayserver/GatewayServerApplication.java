@@ -26,13 +26,23 @@ public class GatewayServerApplication {
     @Bean
     public RouteLocator customRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route(p -> p
-                        .path("/whatsapp/user-service/**")
-                        .filters(f -> f.rewritePath("/whatsapp/user-service/(?<segment>.*)", "/${segment}")
-                                .addResponseHeader("X-Response-Time", LocalDateTime.now().toString())
-                                .requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
-                                        .setKeyResolver(userKeyResolver())))
+                .route("auth-server-route", p -> p
+                        .path("/auth/**")
+                        .uri("http://auth-server:8090")
+                )
+                .route("user-service-route", p -> p
+                        .path("/api/v1/users/**")
+                        .filters(f -> f.rewritePath("/api/v1/users/(?<segment>.*)", "/${segment}"))
                         .uri("lb://USER-SERVICE")
+                )
+                .route("message-service-route", p -> p
+                        .path("/api/v1/messages/**")
+                        .filters(f -> f.rewritePath("/api/v1/messages/(?<segment>.*)", "/${segment}"))
+                        .uri("lb://MESSAGE-SERVICE")
+                )
+                .route("message-service-websocket-route", p -> p
+                        .path("/ws/**")
+                        .uri("lb:ws://MESSAGE-SERVICE")
                 )
 
                 .build();
@@ -52,7 +62,8 @@ public class GatewayServerApplication {
 
     @Bean
     KeyResolver userKeyResolver() {
-        return exchange -> Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst("user"))
+        return exchange -> exchange.getPrincipal()
+                .flatMap(p -> Mono.just(p.getName()))
                 .defaultIfEmpty("anonymous");
     }
 }

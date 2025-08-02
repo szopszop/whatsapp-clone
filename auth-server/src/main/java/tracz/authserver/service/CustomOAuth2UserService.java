@@ -29,7 +29,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         AuthUser authUser = authUserRepository.findByEmail(email)
                 .orElseGet(() -> {
                     Role userRole = roleRepository.findByName("ROLE_USER")
-                            .orElseThrow(() -> new IllegalStateException("Rola ROLE_USER nie istnieje w bazie danych."));
+                            .orElseThrow(() -> new IllegalStateException("Role ROLE_USER does not exist in DB"));
                     AuthUser newUser = AuthUser.builder()
                             .email(email)
                             .password("")

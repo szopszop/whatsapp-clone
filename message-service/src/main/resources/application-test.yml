@@ -1,0 +1,68 @@
+server:
+  port: 9010
+
+spring:
+  application:
+    name: message-service
+  data:
+    mongodb:
+      uri: "${MONGO_DB_URI:mongodb://localhost:27017/whatsapp_messages}"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+  rabbitmq:
+    host: rabbitmq
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: message-service
+
+#Eureka dashboard
+info:
+  app:
+    name: "message-service"
+    description: "Message service app (Development Profile)"
+    version: "1.0.0-DEV"
+
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+
+logging:
+  level:
+    root: INFO
+    tracz:
+      messageservice: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

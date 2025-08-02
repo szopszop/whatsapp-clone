@@ -16,7 +16,7 @@ spring:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -27,14 +27,20 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
     schemas: public
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: guest
+    password: guest
 
 eureka:
   client:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8070/eureka/
-
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: user-service
 
 #Eureka dashboard
 info:
