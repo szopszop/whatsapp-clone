@@ -1,13 +1,9 @@
 services:
-  network-deploy-service:
-    networks:
-      - szopnet
 
   microservice-db-postgres-config:
-    extends:
-      service:
-        network-deploy-service
     image: postgres:17-alpine
+    networks:
+      - szopnet
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}" ]
       interval: 10s
@@ -17,30 +13,15 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
 
-  microservice-base-config:
-    extends:
-      service: network-deploy-service
+  microservice-eureka-config:
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8060/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+    networks:
+      - szopnet
     deploy:
       resources:
         limits:
           memory: 700m
-
-  microservice-configserver-config:
-    extends:
-      service: microservice-base-config
-    environment:
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8060/
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-
-  microservice-eureka-config:
-    extends:
-      service: microservice-configserver-config
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
