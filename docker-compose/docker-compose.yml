@@ -21,6 +21,15 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     networks:
       - szopnet
 
@@ -163,6 +172,8 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9010/actuator/health" ]
       interval: 10s
@@ -173,6 +184,8 @@ services:
       SPRING_APPLICATION_NAME: message-service
       MONGO_DB_URI: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@message-service-db:27017/${MESSAGE_SERVICE_DB_NAME}?authSource=admin
       OTEL_SERVICE_NAME: message-service
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
 
   notification-service:
     extends:
