@@ -1,10 +1,23 @@
-.admin-panel {
+.admin-panel-container {
   padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.iframe-container {
+
+h2 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin-bottom: 1.5rem;
+  color: #666;
+}
+
+.grafana-container {
   border: 1px solid #ccc;
   border-radius: 5px;
   overflow: hidden;
-  height: 80vh;
-  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
