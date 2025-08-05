@@ -17,7 +17,7 @@ import tracz.authserver.dto.RegisterRequest;
 import tracz.authserver.service.AuthUserService;
 import java.util.UUID;
 
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @RestController
 public class AuthUserApiController {

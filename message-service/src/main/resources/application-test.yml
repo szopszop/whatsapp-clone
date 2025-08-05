@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: message-service
+  config:
+    import: "optional:configserver:http://configserver:8060/"
   data:
     mongodb:
       uri: "${MONGO_DB_URI:mongodb://localhost:27017/whatsapp_messages}"
@@ -14,6 +16,11 @@ spring:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   rabbitmq:
     host: rabbitmq
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
 
 eureka:
   client:

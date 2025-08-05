@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: user-service
+  config:
+    import: "optional:configserver:http://configserver:8060/"
   datasource:
     url: jdbc:postgresql://localhost:5430/${USER_SERVICE_DB_NAME}
     username: ${POSTGRES_USERNAME}

@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-redis
+  labels:
+    app: gateway-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-redis
+  template:
+    metadata:
+      labels:
+        app: gateway-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+        readinessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-redis
+spec:
+  selector:
+    app: gateway-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatewayserver
+  labels:
+    app: gatewayserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatewayserver
+  template:
+    metadata:
+      labels:
+        app: gatewayserver
+    spec:
+      containers:
+      - name: gatewayserver
+        image: gcr.io/${PROJECT_ID}/gatewayserver:${TAG}
+        ports:
+        - containerPort: 8050
+        env:
+        - name: SPRING_APPLICATION_NAME
+          value: "gatewayserver"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: SPRING_CONFIG_IMPORT
+          value: "configserver:http://configserver:8060/"
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          value: "http://eurekaserver:8070/eureka/"
+        - name: SPRING_DATA_REDIS_CONNECT-TIMEOUT
+          value: "2s"
+        - name: SPRING_DATA_REDIS_HOST
+          value: "gateway-redis"
+        - name: SPRING_DATA_REDIS_PORT
+          value: "6379"
+        - name: SPRING_DATA_REDIS_TIMEOUT
+          value: "1s"
+        - name: OTEL_SERVICE_NAME
+          value: "gatewayserver"
+        resources:
+          limits:
+            memory: "700Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8050
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8050
+          initialDelaySeconds: 90
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatewayserver
+spec:
+  selector:
+    app: gatewayserver
+  ports:
+  - port: 8050
+    targetPort: 8050
+  type: LoadBalancer

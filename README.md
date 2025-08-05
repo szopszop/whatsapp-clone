@@ -53,3 +53,25 @@ https://github.com/szopszop/whatsapp-clone-config
 - WebSockets for live chat experience  
 - Test Containers for integration testing  
 - RabbitMQ for event-driven comms between services  
+
+---
+
+## Deployment Options
+
+### Local Development with Docker Compose
+
+For local development, you can use Docker Compose:
+
+```bash
+docker-compose -f docker-compose/docker-compose.yml up -d
+```
+
+### Cloud Deployment with Kubernetes
+
+The application can be automatically deployed to Google Kubernetes Engine (GKE) using GitHub Actions:
+
+1. Push changes to the main branch
+2. GitHub Actions workflow builds Docker images and pushes them to Google Container Registry
+3. Kubernetes manifests are applied to deploy the application to GKE
+
+For detailed instructions on setting up GCP deployment, see the [Kubernetes Deployment README](k8s/README.md).
