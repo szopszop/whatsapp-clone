@@ -3,7 +3,7 @@ name: Build and Deploy to GCP
 on:
   push:
     branches:
-      - main  # Change this to your main branch name if different
+      - main
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
