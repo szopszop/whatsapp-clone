@@ -27,6 +27,8 @@ Before deploying to GKE, you need to:
    - Kubernetes Engine Admin
    - Storage Admin
    - Container Registry Service Agent
+   - Artifact Registry Administrator (for pushing images to Artifact Registry)
+   - Artifact Registry Repository Administrator (for creating repositories)
 3. Download the service account key as JSON
 4. Add the following secrets to your GitHub repository:
    - `GCP_PROJECT_ID`: Your Google Cloud project ID

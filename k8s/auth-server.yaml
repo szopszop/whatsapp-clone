@@ -91,7 +91,7 @@ spec:
     spec:
       containers:
       - name: auth-server
-        image: gcr.io/${PROJECT_ID}/auth-server:${TAG}
+        image: us-docker.pkg.dev/${PROJECT_ID}/whatsapp-clone/auth-server:${TAG}
         ports:
         - containerPort: 8090
         env:
