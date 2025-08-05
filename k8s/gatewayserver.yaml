@@ -110,4 +110,4 @@ spec:
   ports:
   - port: 8050
     targetPort: 8050
-  type: LoadBalancer
+  type: ClusterIP

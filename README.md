@@ -62,9 +62,28 @@ https://github.com/szopszop/whatsapp-clone-config
 
 For local development, you can use Docker Compose:
 
-```bash
-docker-compose -f docker-compose/docker-compose.yml up -d
-```
+1. Make sure you have the `.env` file in the root directory with all required environment variables:
+   - Database credentials (POSTGRES_USERNAME, POSTGRES_PASSWORD)
+   - Service database names (AUTH_SERVER_DB_NAME, USER_SERVICE_DB_NAME, MESSAGE_SERVICE_DB_NAME)
+   - MongoDB credentials (MONGO_DB_USER, MONGO_DB_PASSWORD)
+   - RabbitMQ credentials (RABBITMQ_USER, RABBITMQ_PASSWORD)
+   - JWT secrets and other configuration
+
+2. Run the application using Docker Compose:
+   ```bash
+   docker-compose -f docker-compose/docker-compose.yml up -d
+   ```
+
+3. Access the services:
+   - Frontend: http://localhost:4200
+   - API Gateway: http://localhost:8050
+   - Auth Server: http://localhost:8090
+   - Grafana Dashboard: http://localhost:3000
+
+4. To stop the application:
+   ```bash
+   docker-compose -f docker-compose/docker-compose.yml down
+   ```
 
 ### Cloud Deployment with Kubernetes
 
