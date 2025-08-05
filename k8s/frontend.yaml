@@ -21,9 +21,11 @@ spec:
         - containerPort: 80
         env:
         - name: API_URL
-          value: "http://gatewayserver:8050"
+          value: "https://api.${PROJECT_ID}.cloud.goog"
         - name: AUTH_SERVER_URL
-          value: "http://auth-server:8090"
+          value: "https://auth.${PROJECT_ID}.cloud.goog"
+        - name: GRAFANA_URL
+          value: "https://grafana.${PROJECT_ID}.cloud.goog"
         readinessProbe:
           httpGet:
             path: /

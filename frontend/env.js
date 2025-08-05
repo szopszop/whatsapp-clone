@@ -24,8 +24,9 @@ let content = fs.readFileSync(mainJsFilePath, 'utf8');
 
 // Replace environment variables
 const environmentVariables = {
-  API_URL: process.env.API_URL || 'http://localhost:8050',
-  AUTH_SERVER_URL: process.env.AUTH_SERVER_URL || 'http://localhost:8090'
+  gatewayApiUrl: process.env.API_URL ? `${process.env.API_URL}/whatsapp` : 'http://localhost:8050/whatsapp',
+  AUTH_SERVER_URL: process.env.AUTH_SERVER_URL || 'http://localhost:8090',
+  grafanaUrl: process.env.GRAFANA_URL || 'http://localhost:3000'
 };
 
 // Replace each environment variable in the content
