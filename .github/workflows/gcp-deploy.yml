@@ -62,14 +62,14 @@ jobs:
     - name: Configure Docker to use gcloud credentials
       run: |
         gcloud auth configure-docker
-        gcloud auth configure-docker us-docker.pkg.dev
+        gcloud auth configure-docker europe-central2-docker.pkg.dev
 
     - name: Create Artifact Registry repository if it doesn't exist
       run: |
         # Check if the repository exists
-        if ! gcloud artifacts repositories describe whatsapp-clone --location=us 2>/dev/null; then
-          echo "Creating Artifact Registry repository whatsapp-clone in us region"
-          gcloud artifacts repositories create whatsapp-clone --repository-format=docker --location=us --description="Docker repository for WhatsApp Clone"
+        if ! gcloud artifacts repositories describe whatsapp-clone --location=europe-central2 2>/dev/null; then
+          echo "Creating Artifact Registry repository whatsapp-clone in europe-central2 region"
+          gcloud artifacts repositories create whatsapp-clone --repository-format=docker --location=europe-central2 --description="Docker repository for WhatsApp Clone"
         else
           echo "Artifact Registry repository whatsapp-clone already exists"
         fi
@@ -84,7 +84,7 @@ jobs:
     - name: Build and push auth-server
       run: |
         cd auth-server
-        mvn compile jib:build -Djib.to.image=us-docker.pkg.dev/${{ env.PROJECT_ID }}/whatsapp-clone/auth-server:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=europe-central2-docker.pkg.dev/${{ env.PROJECT_ID }}/whatsapp-clone/auth-server:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
 
     - name: Build and push configserver
       run: |
