@@ -3,7 +3,7 @@ name: Build and Deploy to GCP
 on:
   push:
     branches:
-      - main
+      - '*'
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -73,37 +73,37 @@ jobs:
     - name: Build and push auth-server
       run: |
         cd auth-server
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/auth-server:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/auth-server:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     - name: Build and push configserver
       run: |
         cd configserver
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/configserver:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/configserver:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     - name: Build and push eurekaserver
       run: |
         cd eurekaserver
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/eurekaserver:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/eurekaserver:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     - name: Build and push user-service
       run: |
         cd user-service
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/user-service:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/user-service:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     - name: Build and push message-service
       run: |
         cd message-service
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/message-service:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/message-service:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     - name: Build and push notification-service
       run: |
         cd notification-service
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/notification-service:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/notification-service:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     - name: Build and push gatewayserver
       run: |
         cd gatewayserver
-        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/gatewayserver:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}'
+        mvn compile jib:build -Djib.to.image=gcr.io/${{ env.PROJECT_ID }}/gatewayserver:${{ github.sha }} -Djib.to.auth.username=_json_key -Djib.to.auth.password='${{ secrets.GCP_SA_KEY }}' -Dspring.profiles.active=prod
 
     # Build and push frontend
     - name: Build and push frontend

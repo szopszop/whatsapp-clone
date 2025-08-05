@@ -1,0 +1,77 @@
+server:
+  port: 9020
+
+spring:
+  application:
+    name: notification-service
+  config:
+    import: "optional:configserver:http://configserver:8060/"
+  data:
+    mongodb:
+      uri: "${MONGO_DB_URI:mongodb://mongo:27017/whatsapp_messages}"
+      username: ${MONGO_DB_USER}
+      password: ${MONGO_DB_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+app:
+  firebase:
+    service-account-file: "firebase/service-account-key.json"
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: notification-service
+
+#Eureka dashboard
+info:
+  app:
+    name: "notification-service"
+    description: "Notification service app (Production Profile)"
+    version: "1.0.0"
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    tracz:
+      notificationservice: INFO
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

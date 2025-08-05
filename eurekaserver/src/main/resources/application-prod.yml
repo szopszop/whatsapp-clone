@@ -1,0 +1,60 @@
+server:
+  port: 8070
+
+spring:
+  application:
+    name: eurekaserver
+  config:
+    import: "optional:configserver:http://configserver:8060/"
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lowerCaseServiceId: true
+
+eureka:
+  client:
+    fetchRegistry: false
+    registerWithEureka: false
+    serviceUrl:
+      defaultZone: http://eurekaserver:8070/eureka/
+  server:
+    waitTimeInMsWhenSyncEmpty: 5
+    enableSelfPreservation: false
+  instance:
+    hostname: eurekaserver
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    tracz:
+      eurekaserver: INFO
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
