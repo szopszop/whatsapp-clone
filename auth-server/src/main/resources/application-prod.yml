@@ -7,13 +7,13 @@ spring:
   config:
     import: "optional:configserver:http://configserver:8060/"
   datasource:
-    url: jdbc:postgresql://postgres:5432/${AUTH_SERVER_DB_NAME}
+    url: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:

@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whatsapp-clone-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: whatsapp-clone-ip
+    networking.gke.io/managed-certificates: whatsapp-clone-cert
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+  - host: "frontend.${PROJECT_ID}.cloud.goog"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+  - host: "api.${PROJECT_ID}.cloud.goog"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: gatewayserver
+            port:
+              number: 8050
+  - host: "auth.${PROJECT_ID}.cloud.goog"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-server
+            port:
+              number: 8090
+  - host: "grafana.${PROJECT_ID}.cloud.goog"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: whatsapp-clone-cert
+spec:
+  domains:
+  - "frontend.${PROJECT_ID}.cloud.goog"
+  - "api.${PROJECT_ID}.cloud.goog"
+  - "auth.${PROJECT_ID}.cloud.goog"
+  - "grafana.${PROJECT_ID}.cloud.goog"

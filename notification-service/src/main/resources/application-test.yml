@@ -70,6 +70,13 @@ logging:
   level:
     root: INFO
     tracz:
-      messageservice: DEBUG
+      notificationservice: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+#OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

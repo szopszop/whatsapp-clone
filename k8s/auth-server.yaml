@@ -91,7 +91,7 @@ spec:
     spec:
       containers:
       - name: auth-server
-        image: europe-central2-docker.pkg.dev/${PROJECT_ID}/whatsapp-clone/auth-server:${TAG}
+        image: gcr.io/${PROJECT_ID}/auth-server:${TAG}
         ports:
         - containerPort: 8090
         env:
@@ -104,7 +104,11 @@ spec:
         - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
           value: "http://eurekaserver:8070/eureka/"
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://auth-server-db:5432/$(AUTH_SERVER_DB_NAME)"
+          value: "jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}"
+        - name: ALLOWED_ORIGINS
+          value: "*"
+        - name: ANGULAR_URL
+          value: "http://frontend:80"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -129,8 +133,11 @@ spec:
           value: "auth-server"
         resources:
           limits:
-            memory: "700Mi"
-            cpu: "500m"
+            memory: "1Gi"
+            cpu: "750m"
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
         readinessProbe:
           httpGet:
             path: /actuator/health
@@ -138,7 +145,7 @@ spec:
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /actuator/health
@@ -146,7 +153,7 @@ spec:
           initialDelaySeconds: 90
           periodSeconds: 20
           timeoutSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 5
 ---
 apiVersion: v1
 kind: Service
@@ -158,4 +165,4 @@ spec:
   ports:
   - port: 8090
     targetPort: 8090
-  type: LoadBalancer
+  type: ClusterIP

@@ -117,21 +117,21 @@ jobs:
     - name: Update Kubernetes manifests
       run: |
         # Replace placeholders in Kubernetes manifests
-        find k8s -type f -name "*.yaml" -exec sed -i "s/\${PROJECT_ID}/${{ env.PROJECT_ID }}/g" {} \;
-        find k8s -type f -name "*.yaml" -exec sed -i "s/\${TAG}/${{ github.sha }}/g" {} \;
+        find k8s -type f -name "*.yaml" -exec sed -i "s|\${PROJECT_ID}|${{ env.PROJECT_ID }}|g" {} \;
+        find k8s -type f -name "*.yaml" -exec sed -i "s|\${TAG}|${{ github.sha }}|g" {} \;
 
         # Replace placeholders in secrets.yaml with actual values from GitHub secrets
-        sed -i "s/\${POSTGRES_USERNAME}/${{ secrets.POSTGRES_USERNAME }}/g" k8s/secrets.yaml
-        sed -i "s/\${POSTGRES_PASSWORD}/${{ secrets.POSTGRES_PASSWORD }}/g" k8s/secrets.yaml
-        sed -i "s/\${AUTH_SERVER_DB_NAME}/${{ secrets.AUTH_SERVER_DB_NAME }}/g" k8s/secrets.yaml
-        sed -i "s/\${USER_SERVICE_DB_NAME}/${{ secrets.USER_SERVICE_DB_NAME }}/g" k8s/secrets.yaml
-        sed -i "s/\${MESSAGE_SERVICE_DB_NAME}/${{ secrets.MESSAGE_SERVICE_DB_NAME }}/g" k8s/secrets.yaml
-        sed -i "s/\${MONGO_DB_USER}/${{ secrets.MONGO_DB_USER }}/g" k8s/secrets.yaml
-        sed -i "s/\${MONGO_DB_PASSWORD}/${{ secrets.MONGO_DB_PASSWORD }}/g" k8s/secrets.yaml
-        sed -i "s/\${RABBITMQ_USER}/${{ secrets.RABBITMQ_USER }}/g" k8s/secrets.yaml
-        sed -i "s/\${RABBITMQ_PASSWORD}/${{ secrets.RABBITMQ_PASSWORD }}/g" k8s/secrets.yaml
-        sed -i "s/\${JWT_SECRET}/${{ secrets.JWT_SECRET }}/g" k8s/secrets.yaml
-        sed -i "s/\${ISSUER_URI}/${{ secrets.ISSUER_URI }}/g" k8s/secrets.yaml
+        sed -i "s|\${POSTGRES_USERNAME}|${{ secrets.POSTGRES_USERNAME }}|g" k8s/secrets.yaml
+        sed -i "s|\${POSTGRES_PASSWORD}|${{ secrets.POSTGRES_PASSWORD }}|g" k8s/secrets.yaml
+        sed -i "s|\${AUTH_SERVER_DB_NAME}|${{ secrets.AUTH_SERVER_DB_NAME }}|g" k8s/secrets.yaml
+        sed -i "s|\${USER_SERVICE_DB_NAME}|${{ secrets.USER_SERVICE_DB_NAME }}|g" k8s/secrets.yaml
+        sed -i "s|\${MESSAGE_SERVICE_DB_NAME}|${{ secrets.MESSAGE_SERVICE_DB_NAME }}|g" k8s/secrets.yaml
+        sed -i "s|\${MONGO_DB_USER}|${{ secrets.MONGO_DB_USER }}|g" k8s/secrets.yaml
+        sed -i "s|\${MONGO_DB_PASSWORD}|${{ secrets.MONGO_DB_PASSWORD }}|g" k8s/secrets.yaml
+        sed -i "s|\${RABBITMQ_USER}|${{ secrets.RABBITMQ_USER }}|g" k8s/secrets.yaml
+        sed -i "s|\${RABBITMQ_PASSWORD}|${{ secrets.RABBITMQ_PASSWORD }}|g" k8s/secrets.yaml
+        sed -i "s|\${JWT_SECRET}|${{ secrets.JWT_SECRET }}|g" k8s/secrets.yaml
+        sed -i "s|\${ISSUER_URI}|${{ secrets.ISSUER_URI }}|g" k8s/secrets.yaml
 
         # Apply the manifests to the cluster in the correct order
         kubectl apply -f k8s/secrets.yaml
@@ -159,10 +159,20 @@ jobs:
         kubectl apply -f k8s/gatewayserver.yaml
         kubectl wait --for=condition=available --timeout=300s deployment/gatewayserver
 
+        kubectl apply -f k8s/prometheus.yaml
+        kubectl wait --for=condition=available --timeout=300s deployment/prometheus
+
+        kubectl apply -f k8s/grafana.yaml
+        kubectl wait --for=condition=available --timeout=300s deployment/grafana
+
         kubectl apply -f k8s/frontend.yaml
         kubectl wait --for=condition=available --timeout=300s deployment/frontend
 
-        # Get the external IP of the frontend, gatewayserver, and auth-server services
-        echo "Frontend is available at: $(kubectl get service frontend -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
-        echo "API Gateway is available at: $(kubectl get service gatewayserver -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
-        echo "Auth Server is available at: $(kubectl get service auth-server -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
+        # Apply ingress resources
+        kubectl apply -f k8s/ingress.yaml
+
+        # Get the domain names for accessing the services
+        echo "Frontend is available at: https://frontend.${PROJECT_ID}.cloud.goog"
+        echo "API Gateway is available at: https://api.${PROJECT_ID}.cloud.goog"
+        echo "Auth Server is available at: https://auth.${PROJECT_ID}.cloud.goog"
+        echo "Grafana is available at: https://grafana.${PROJECT_ID}.cloud.goog"

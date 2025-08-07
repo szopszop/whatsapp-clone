@@ -84,7 +84,7 @@ services:
       resources:
         limits:
           memory: 700m
-      
+
   eurekaserver:
     image: "szopszop/eurekaserver"
     container_name: eurekaserver
@@ -263,6 +263,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - szopnet
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      gatewayserver:
+        condition: service_healthy
+      auth-server:
+        condition: service_healthy
+      grafana:
+        condition: service_healthy
+    environment:
+      - API_URL=http://gatewayserver:8050
+      - AUTH_SERVER_URL=http://auth-server:8090
+      - GRAFANA_URL=http://grafana:3000
     networks:
       - szopnet
 
