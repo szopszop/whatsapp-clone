@@ -127,7 +127,7 @@ spec:
         - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
           value: "http://eurekaserver:8070/eureka/"
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}"
+          value: "jdbc:postgresql://auth-server-db:5432/$(AUTH_SERVER_DB_NAME)"
         - name: ALLOWED_ORIGINS
           value: "*"
         - name: ANGULAR_URL
@@ -138,6 +138,16 @@ spec:
               name: app-secrets
               key: POSTGRES_USERNAME
         - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: POSTGRES_PASSWORD
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: POSTGRES_USERNAME
+        - name: SPRING_DATASOURCE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: app-secrets
