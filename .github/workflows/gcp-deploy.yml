@@ -21,6 +21,13 @@ env:
   MONGO_DB_PASSWORD: ${{ secrets.MONGO_DB_PASSWORD }}
   RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
   RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+  AUTH_SERVER_INTERNAL_SECRET: ${{ secrets.AUTH_SERVER_INTERNAL_SECRET }}
+  USER_SERVICE_CLIENT_SECRET: ${{ secrets.USER_SERVICE_CLIENT_SECRET }}
+  MESSAGE_SERVICE_CLIENT_SECRET: ${{ secrets.MESSAGE_SERVICE_CLIENT_SECRET }}
+  NOTIFICATION_SERVICE_CLIENT_SECRET: ${{ secrets.NOTIFICATION_SERVICE_CLIENT_SECRET }}
+  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
 jobs:
   setup-build-publish-deploy:
@@ -132,6 +139,13 @@ jobs:
         sed -i "s|\${RABBITMQ_PASSWORD}|${{ secrets.RABBITMQ_PASSWORD }}|g" k8s/secrets.yaml
         sed -i "s|\${JWT_SECRET}|${{ secrets.JWT_SECRET }}|g" k8s/secrets.yaml
         sed -i "s|\${ISSUER_URI}|${{ secrets.ISSUER_URI }}|g" k8s/secrets.yaml
+        sed -i "s|\${AUTH_SERVER_INTERNAL_SECRET}|${{ secrets.AUTH_SERVER_INTERNAL_SECRET }}|g" k8s/secrets.yaml
+        sed -i "s|\${USER_SERVICE_CLIENT_SECRET}|${{ secrets.USER_SERVICE_CLIENT_SECRET }}|g" k8s/secrets.yaml
+        sed -i "s|\${MESSAGE_SERVICE_CLIENT_SECRET}|${{ secrets.MESSAGE_SERVICE_CLIENT_SECRET }}|g" k8s/secrets.yaml
+        sed -i "s|\${NOTIFICATION_SERVICE_CLIENT_SECRET}|${{ secrets.NOTIFICATION_SERVICE_CLIENT_SECRET }}|g" k8s/secrets.yaml
+        sed -i "s|\${KEYSTORE_PASSWORD}|${{ secrets.KEYSTORE_PASSWORD }}|g" k8s/secrets.yaml
+        sed -i "s|\${GOOGLE_CLIENT_ID}|${{ secrets.GOOGLE_CLIENT_ID }}|g" k8s/secrets.yaml
+        sed -i "s|\${GOOGLE_CLIENT_SECRET}|${{ secrets.GOOGLE_CLIENT_SECRET }}|g" k8s/secrets.yaml
 
         # Apply the manifests to the cluster in the correct order
         kubectl apply -f k8s/secrets.yaml
