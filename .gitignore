@@ -38,3 +38,4 @@ build/
 /.env
 /docker-compose/mongo-data/
 /docs/tasks.md
+/docker-compose/.env
