@@ -95,9 +95,26 @@ spec:
       labels:
         app: auth-server
     spec:
+      initContainers:
+      - name: wait-for-configserver
+        image: busybox:1.28
+        command: ['sh', '-c', 'until wget -T 5 -qO- http://configserver:8060/actuator/health; do echo waiting for configserver; sleep 5; done;']
+      - name: wait-for-database
+        image: postgres:17-alpine
+        command: ['sh', '-c', 'until pg_isready -h auth-server-db -p 5432 -U $POSTGRES_USER; do echo waiting for database; sleep 5; done;']
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: POSTGRES_USERNAME
+      - name: wait-for-eurekaserver
+        image: busybox:1.28
+        command: ['sh', '-c', 'until wget -T 5 -qO- http://eurekaserver:8070/actuator/health; do echo waiting for eurekaserver; sleep 5; done;']
       containers:
       - name: auth-server
         image: gcr.io/${PROJECT_ID}/auth-server:${TAG}
+        command: ["java", "-jar", "/app/app.jar"]
         ports:
         - containerPort: 8090
         env:
@@ -137,6 +154,8 @@ spec:
               key: AUTH_SERVER_DB_NAME
         - name: OTEL_SERVICE_NAME
           value: "auth-server"
+        - name: SPRING_MAIN_WEB_APPLICATION_TYPE
+          value: "servlet"
         resources:
           limits:
             memory: "1Gi"
@@ -148,15 +167,21 @@ spec:
           httpGet:
             path: /actuator/health
             port: 8090
-          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8090
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
         livenessProbe:
           httpGet:
             path: /actuator/health
             port: 8090
-          initialDelaySeconds: 90
           periodSeconds: 20
           timeoutSeconds: 5
           failureThreshold: 5
