@@ -1,2 +1,138 @@
-<h1>Chat page</h1>
-<p>Chat</p>
+<div class="chat-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- User profile section -->
+    <div class="user-profile">
+      <div class="user-avatar">
+        <img src="assets/default-avatar.svg" alt="User Avatar" *ngIf="!currentUser?.profilePictureUrl">
+        <img [src]="currentUser?.profilePictureUrl" alt="User Avatar" *ngIf="currentUser?.profilePictureUrl">
+      </div>
+      <div class="user-info">
+        <h3>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</h3>
+        <span class="status" [ngClass]="currentUser?.status?.toLowerCase()">
+          {{ currentUser?.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Search users section -->
+    <div class="search-section">
+      <div class="search-input">
+        <input
+          type="text"
+          placeholder="Find or start a conversation"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="searchUsers()"
+        >
+        <button (click)="searchUsers()">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contacts list -->
+    <div class="contacts-section">
+      <h4>Contacts</h4>
+      <div class="contacts-list">
+        <div
+          *ngFor="let contact of contacts"
+          class="contact-item"
+          [ngClass]="{'active': selectedContact?.id === contact.id}"
+          (click)="selectContact(contact)"
+        >
+          <div class="contact-avatar">
+            <img src="assets/default-avatar.svg" alt="Contact Avatar" *ngIf="!contact.contact.profilePictureUrl">
+            <img [src]="contact.contact.profilePictureUrl" alt="Contact Avatar" *ngIf="contact.contact.profilePictureUrl">
+          </div>
+          <div class="contact-info">
+            <h5>{{ contact.contact.firstName }} {{ contact.contact.lastName }}</h5>
+            <span class="status" [ngClass]="contact.contact.status?.toLowerCase()">
+              {{ contact.contact.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search results -->
+    <div class="search-results" *ngIf="searchResults.length > 0">
+      <h4>Search Results</h4>
+      <div class="search-results-list">
+        <div
+          *ngFor="let user of searchResults"
+          class="search-result-item"
+          (click)="addContact(user)"
+        >
+          <div class="user-avatar">
+            <img src="assets/default-avatar.svg" alt="User Avatar" *ngIf="!user.profilePictureUrl">
+            <img [src]="user.profilePictureUrl" alt="User Avatar" *ngIf="user.profilePictureUrl">
+          </div>
+          <div class="user-info">
+            <h5>{{ user.firstName }} {{ user.lastName }}</h5>
+            <span class="status" [ngClass]="user.status?.toLowerCase()">
+              {{ user.status }}
+            </span>
+          </div>
+          <button class="add-contact-btn" (click)="$event.stopPropagation(); addContact(user)">
+            <i class="fa fa-plus"></i> Add
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main chat area -->
+  <div class="chat-area">
+    <!-- Chat header -->
+    <div class="chat-header" *ngIf="selectedContact">
+      <div class="contact-info">
+        <h3>{{ selectedContact.contact.firstName }} {{ selectedContact.contact.lastName }}</h3>
+        <span class="status" [ngClass]="selectedContact.contact.status?.toLowerCase()">
+          {{ selectedContact.contact.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Messages area -->
+    <div class="messages-area" #messagesContainer>
+      <div *ngIf="!selectedContact" class="no-conversation">
+        <p>Select a contact to start a conversation</p>
+      </div>
+      <div *ngIf="selectedContact && messages.length === 0" class="no-messages">
+        <p>No messages yet. Start a conversation!</p>
+      </div>
+      <div *ngIf="selectedContact && messages.length > 0" class="messages-list">
+        <div
+          *ngFor="let message of messages"
+          class="message-item"
+          [ngClass]="{'own-message': message.senderId === currentUser?.authServerUserId, 'other-message': message.senderId !== currentUser?.authServerUserId}"
+        >
+          <div class="message-avatar" *ngIf="message.senderId !== currentUser?.authServerUserId">
+            <img src="assets/default-avatar.svg" alt="User Avatar">
+          </div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender" *ngIf="message.senderId !== currentUser?.authServerUserId">
+                {{ getContactName(message.senderId) }}
+              </span>
+              <span class="message-time">{{ message.createdAt | date:'short' }}</span>
+            </div>
+            <div class="message-text">{{ message.content }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message input area -->
+    <div class="message-input-area" *ngIf="selectedContact">
+      <textarea
+        placeholder="Type a message..."
+        [(ngModel)]="newMessage"
+        (keyup.enter)="sendMessage()"
+      ></textarea>
+      <button (click)="sendMessage()">
+        <i class="fa fa-paper-plane"></i> Send
+      </button>
+    </div>
+  </div>
+</div>

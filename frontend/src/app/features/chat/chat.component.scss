@@ -1,0 +1,350 @@
+// Variables
+$slack-purple: #4A154B;
+$slack-green: #2BAC76;
+$slack-blue: #36C5F0;
+$slack-red: #E01E5A;
+$slack-yellow: #ECB22E;
+$slack-sidebar-bg: #3F0E40;
+$slack-sidebar-hover: #350D36;
+$slack-text-color: #D1D2D3;
+$slack-active-item: #1164A3;
+$slack-border-color: #522653;
+$slack-message-hover: #F8F8F8;
+
+// Global styles
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+// Main container
+.chat-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+// Sidebar styles
+.sidebar {
+  width: 260px;
+  background-color: $slack-sidebar-bg;
+  color: $slack-text-color;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid $slack-border-color;
+}
+
+.user-profile {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid $slack-border-color;
+}
+
+.user-avatar, .contact-avatar, .message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-right: 10px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.user-info, .contact-info {
+  flex: 1;
+
+  h3, h5 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: white;
+  }
+
+  .status {
+    font-size: 12px;
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+
+    &.online {
+      color: $slack-green;
+      &::before {
+        content: "●";
+        margin-right: 4px;
+      }
+    }
+
+    &.offline {
+      color: $slack-text-color;
+      opacity: 0.7;
+    }
+  }
+}
+
+.search-section {
+  padding: 16px;
+  border-bottom: 1px solid $slack-border-color;
+
+  .search-input {
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid $slack-border-color;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 14px;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $slack-blue;
+      }
+    }
+
+    button {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: $slack-text-color;
+      cursor: pointer;
+    }
+  }
+}
+
+.contacts-section, .search-results {
+  padding: 16px;
+
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    color: $slack-text-color;
+    opacity: 0.8;
+  }
+}
+
+.contacts-list, .search-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-item, .search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $slack-sidebar-hover;
+  }
+
+  &.active {
+    background-color: $slack-active-item;
+  }
+}
+
+.search-result-item {
+  position: relative;
+
+  .add-contact-btn {
+    position: absolute;
+    right: 8px;
+    background-color: $slack-green;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+
+    &:hover {
+      background-color: darken($slack-green, 5%);
+    }
+  }
+
+  &:hover .add-contact-btn {
+    display: block;
+  }
+}
+
+// Chat area styles
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.chat-header {
+  padding: 16px;
+  border-bottom: 1px solid #E8E8E8;
+  display: flex;
+  align-items: center;
+
+  .contact-info {
+    h3 {
+      color: #1D1C1D;
+    }
+
+    .status {
+      background-color: #F8F8F8;
+      color: #616061;
+
+      &.online {
+        color: $slack-green;
+      }
+    }
+  }
+}
+
+.messages-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column-reverse;
+
+  .no-conversation, .no-messages {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #616061;
+    font-size: 16px;
+  }
+
+  .messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.message-item {
+  display: flex;
+  margin-bottom: 16px;
+
+  &.own-message {
+    flex-direction: row-reverse;
+
+    .message-content {
+      background-color: #F8F8F8;
+      border-radius: 8px 0 8px 8px;
+      margin-left: 0;
+      margin-right: 10px;
+
+      .message-header {
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  &.other-message {
+    .message-content {
+      background-color: #F8F8F8;
+      border-radius: 0 8px 8px 8px;
+    }
+  }
+
+  .message-content {
+    padding: 12px;
+    max-width: 70%;
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+
+      .message-sender {
+        font-weight: 700;
+        color: #1D1C1D;
+      }
+
+      .message-time {
+        font-size: 12px;
+        color: #616061;
+      }
+    }
+
+    .message-text {
+      font-size: 15px;
+      line-height: 1.46668;
+      color: #1D1C1D;
+      word-wrap: break-word;
+    }
+  }
+}
+
+.message-input-area {
+  padding: 16px;
+  border-top: 1px solid #E8E8E8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  textarea {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #E8E8E8;
+    border-radius: 4px;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    font-family: inherit;
+    font-size: 15px;
+
+    &:focus {
+      outline: none;
+      border-color: $slack-blue;
+    }
+  }
+
+  button {
+    background-color: $slack-green;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: darken($slack-green, 5%);
+    }
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .chat-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: 300px;
+  }
+}
