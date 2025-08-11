@@ -50,4 +50,7 @@ public class User extends BaseEntity {
     @Column(name = "fcm_token")
     private Set<String> fcmTokens = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Contact> contacts = new ArrayList<>();
 }
