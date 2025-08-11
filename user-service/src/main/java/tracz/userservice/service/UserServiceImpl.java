@@ -8,7 +8,6 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import tracz.userservice.dto.*;
 import tracz.userservice.entity.User;
-import tracz.userservice.entity.UserStatus;
 import tracz.userservice.exception.ResourceNotFoundException;
 import tracz.userservice.exception.UserAlreadyExistsException;
 import tracz.userservice.mapper.UserMapper;
@@ -95,7 +94,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUserStatus(UUID authUserId, UserStatusUpdateDTO statusUpdateDTO) {
         User user = findUserByAuthIdOrThrow(authUserId);
-        user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
+        user.setStatus(User.UserStatus.valueOf(statusUpdateDTO.status()));
         userRepository.save(user);
         log.info("Status for user {} updated to {}.", user.getEmail(), statusUpdateDTO.status());
 

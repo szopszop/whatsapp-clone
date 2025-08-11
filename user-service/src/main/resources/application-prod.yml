@@ -29,7 +29,7 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
     schemas: public
-    clean-disabled: true
+    clean-disabled: false
   rabbitmq:
     host: ${RABBIT_MQ_HOST:rabbitmq}
     port: 5672

@@ -41,6 +41,10 @@ public class User extends BaseEntity {
     @Builder.Default
     private UserStatus status = UserStatus.OFFLINE;
 
+    public enum UserStatus {
+        ONLINE, OFFLINE, AWAY, BUSY
+    }
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_fcm_tokens", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "fcm_token")
