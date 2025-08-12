@@ -1,35 +1,46 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Message } from '../models/user.model';
+import { environment } from '../../../environments/environment';
+import { Message, SendMessageRequest } from '../models/message.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageService {
-  private apiUrl = '/api/v1/messages';
+  private apiUrl = `${environment.gatewayApiUrl}/api/v1/messages`;
 
   constructor(private http: HttpClient) { }
 
   /**
+   * Send a message to another user
+   */
+  sendMessage(message: SendMessageRequest): Observable<Message> {
+    return this.http.post<Message>(this.apiUrl, message);
+  }
+
+  /**
    * Get messages for a conversation
    */
-  getMessagesForConversation(conversationId: string, page: number = 0, size: number = 50): Observable<any> {
+  getConversationMessages(conversationId: string, page: number = 0, size: number = 50): Observable<{ content: Message[], totalElements: number }> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<any>(`${this.apiUrl}/conversation/${conversationId}`, { params });
+    return this.http.get<{ content: Message[], totalElements: number }>(`${this.apiUrl}/conversation/${conversationId}`, { params });
   }
 
   /**
-   * Send a message
+   * Mark a message as read
    */
-  sendMessage(conversationId: string, recipientId: string, content: string): Observable<Message> {
-    return this.http.post<Message>(this.apiUrl, {
-      conversationId,
-      recipientId,
-      content
-    });
+  markMessageAsRead(messageId: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${messageId}/read`, {});
+  }
+
+  /**
+   * Get unread message count
+   */
+  getUnreadMessageCount(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/unread/count`);
   }
 }
