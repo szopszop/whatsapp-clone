@@ -38,3 +38,5 @@ build/
 /.env
 /docker-compose/mongo-data/
 /docs/tasks.md
+/docker-compose/.env
+/notification-service/src/main/resources/firebase/service-account-key.json

@@ -1,60 +1,75 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User, Contact } from '../models/user.model';
+import { environment } from '../../../environments/environment';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = '/api/v1';
+  private apiUrl = `${environment.gatewayApiUrl}/api/v1/user`;
 
   constructor(private http: HttpClient) { }
 
   /**
    * Get the current user's profile
    */
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/user/me`);
+  getMyProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/me`);
   }
 
   /**
-   * Search for users by query
+   * Update the current user's profile
    */
-  searchUsers(query: string, page: number = 0, size: number = 20): Observable<any> {
+  updateMyProfile(profileData: Partial<User>): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/me`, profileData);
+  }
+
+  /**
+   * Update the current user's status
+   */
+  updateMyStatus(status: { status: string }): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/me/status`, status);
+  }
+
+  /**
+   * Search for users by query string
+   */
+  searchUsers(query: string, page: number = 0, size: number = 20): Observable<{ content: User[], totalElements: number }> {
     let params = new HttpParams()
       .set('query', query)
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<any>(`${this.apiUrl}/user/search`, { params });
+    return this.http.get<{ content: User[], totalElements: number }>(`${this.apiUrl}/search`, { params });
   }
 
   /**
-   * Get all contacts for the current user
+   * Get a user by ID
    */
-  getContacts(): Observable<Contact[]> {
-    return this.http.get<Contact[]>(`${this.apiUrl}/contacts`);
+  getUserById(id: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/id?id=${id}`);
   }
 
   /**
-   * Add a user as a contact
+   * Get a user by email
    */
-  addContact(contactId: string): Observable<Contact> {
-    return this.http.post<Contact>(`${this.apiUrl}/contacts`, { contactId });
+  getUserByEmail(email: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/by-email?email=${email}`);
   }
 
   /**
-   * Check if a user is already a contact
+   * Check if an email exists
    */
-  isUserContact(contactId: string): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/contacts/check/${contactId}`);
+  checkEmailExists(email: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/exists-by-email?email=${email}`);
   }
 
   /**
-   * Get a specific contact
+   * Add FCM token for push notifications
    */
-  getContact(contactId: string): Observable<Contact> {
-    return this.http.get<Contact>(`${this.apiUrl}/contacts/${contactId}`);
+  addFcmToken(token: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/me/fcm-token`, token);
   }
 }

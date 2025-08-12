@@ -15,6 +15,8 @@ services:
       retries: 10
     networks:
       - szopnet
+    ports:
+      - "6379:6379"
   rabbitmq:
     image: rabbitmq:4.1-management-alpine
     container_name: rabbitmq
@@ -28,8 +30,9 @@ services:
       retries: 5
       start_period: 5s
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_COOKIE_VALUE}
     networks:
       - szopnet
 
@@ -60,10 +63,11 @@ services:
       - ./mongo-data:/data/db
 
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     networks:
       - szopnet
 
@@ -132,8 +136,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
       OTEL_SERVICE_NAME: auth-server
-      POSTGRES_USER: ${POSTGRES_USERNAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTH_SERVER_INTERNAL_SECRET: ${AUTH_SERVER_INTERNAL_SECRET}
+      USER_SERVICE_CLIENT_SECRET: ${USER_SERVICE_CLIENT_SECRET}
+      MESSAGE_SERVICE_CLIENT_SECRET: ${MESSAGE_SERVICE_CLIENT_SECRET}
+      NOTIFICATION_SERVICE_CLIENT_SECRET: ${NOTIFICATION_SERVICE_CLIENT_SECRET}
+      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
 
   user-service:
     extends:
@@ -158,8 +167,12 @@ services:
       SPRING_APPLICATION_NAME: user-service
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/${USER_SERVICE_DB_NAME}
       OTEL_SERVICE_NAME: user-service
-      POSTGRES_USER: ${POSTGRES_USERNAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_FLYWAY_CLEAN_ON_VALIDATION_ERROR: "true"
+      SPRING_FLYWAY_CLEAN_DISABLED: "false"
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
 
   message-service:
     extends:
@@ -174,6 +187,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      auth-server:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9010/actuator/health" ]
       interval: 10s
@@ -184,8 +199,9 @@ services:
       SPRING_APPLICATION_NAME: message-service
       MONGO_DB_URI: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@message-service-db:27017/${MESSAGE_SERVICE_DB_NAME}?authSource=admin
       OTEL_SERVICE_NAME: message-service
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://auth-server:8090
 
   notification-service:
     extends:
@@ -196,6 +212,8 @@ services:
     depends_on:
       eurekaserver:
         condition: service_healthy
+      auth-server:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9020/actuator/health" ]
       interval: 10s
@@ -205,6 +223,8 @@ services:
     environment:
       SPRING_APPLICATION_NAME: notification-service
       OTEL_SERVICE_NAME: notification-service
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://auth-server:8090
+      SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8060/
 
   gatewayserver:
     extends:

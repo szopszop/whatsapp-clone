@@ -6,13 +6,25 @@ spring:
     name: user-service
   config:
     import: "optional:configserver:http://configserver:8060/"
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${USER_SERVICE_DB_NAME:user_service}
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    schemas: public
+    clean-disabled: false
   security:
     oauth2:
       resourceserver:

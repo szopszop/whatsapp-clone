@@ -6,15 +6,18 @@ spring:
     name: notification-service
   data:
     mongodb:
-      uri: "${MONGO_DB_URI:mongodb://localhost:27017/whatsapp_messages}"
+      uri: "mongodb://localhost:27017/whatsapp_messages_test"
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+          issuer-uri: "http://localhost:8090"
   rabbitmq:
-    host: rabbitmq
+    host: localhost
     port: 5672
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration # Disable RabbitMQ for tests
 
 
 app:
@@ -31,12 +34,13 @@ eureka:
   instance:
     hostname: notification-service
 
+
 #Eureka dashboard
 info:
   app:
-    name: "message-service"
-    description: "Message service app (Development Profile)"
-    version: "1.0.0-DEV"
+    name: "notification-service"
+    description: "Notification service app (Test Profile)"
+    version: "1.0.0-TEST"
 
 
 #Actuator

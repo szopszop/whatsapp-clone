@@ -15,7 +15,7 @@ spring:
         jwt:
           issuer-uri: ${ISSUER_URI:http://auth-server:8090}
   rabbitmq:
-    host: rabbitmq
+    host: localhost
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

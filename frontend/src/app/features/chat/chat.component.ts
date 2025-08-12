@@ -1,78 +1,80 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from '../../core/services/user.service';
+import { ConnectionService } from '../../core/services/connection.service';
 import { MessageService } from '../../core/services/message.service';
-import { User, Contact, Message } from '../../core/models/user.model';
-import { finalize } from 'rxjs/operators';
+import { User } from '../../core/models/user.model';
+import { Connection } from '../../core/models/connection.model';
+import { Message } from '../../core/models/message.model';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatTabsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatCardModule,
+    MatListModule,
+    MatDividerModule,
+    MatBadgeModule,
+    MatTooltipModule,
+    MatSnackBarModule
+  ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
 export class ChatComponent implements OnInit {
-  @ViewChild('messagesContainer') private messagesContainer: ElementRef;
-
-  // User data
-  currentUser: User | null = null;
-  contacts: Contact[] = [];
-  selectedContact: Contact | null = null;
-
-  // Search
+  // User search
   searchQuery: string = '';
   searchResults: User[] = [];
   isSearching: boolean = false;
 
-  // Messages
+  // Contacts
+  contacts: User[] = [];
+  isLoadingContacts: boolean = false;
+
+  // Connection requests
+  pendingRequests: Connection[] = [];
+  isLoadingRequests: boolean = false;
+
+  // Chat
+  selectedContact: User | null = null;
   messages: Message[] = [];
   newMessage: string = '';
   isLoadingMessages: boolean = false;
   currentPage: number = 0;
-  totalPages: number = 0;
+  totalMessages: number = 0;
 
   constructor(
     private userService: UserService,
+    private connectionService: ConnectionService,
     private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
     this.loadContacts();
+    this.loadPendingRequests();
   }
 
-  // User methods
-  loadCurrentUser(): void {
-    this.userService.getCurrentUser().subscribe({
-      next: (user) => {
-        this.currentUser = user;
-      },
-      error: (error) => {
-        console.error('Error loading current user:', error);
-      }
-    });
-  }
-
-  // Contact methods
-  loadContacts(): void {
-    this.userService.getContacts().subscribe({
-      next: (contacts) => {
-        this.contacts = contacts;
-      },
-      error: (error) => {
-        console.error('Error loading contacts:', error);
-      }
-    });
-  }
-
-  selectContact(contact: Contact): void {
-    this.selectedContact = contact;
-    this.loadMessages(contact.conversationId);
-  }
-
-  // Search methods
+  // User search methods
   searchUsers(): void {
     if (!this.searchQuery.trim()) {
       this.searchResults = [];
@@ -80,89 +82,124 @@ export class ChatComponent implements OnInit {
     }
 
     this.isSearching = true;
-    this.userService.searchUsers(this.searchQuery).pipe(
-      finalize(() => this.isSearching = false)
-    ).subscribe({
+    this.userService.searchUsers(this.searchQuery).subscribe({
       next: (response) => {
         this.searchResults = response.content;
+        this.isSearching = false;
       },
       error: (error) => {
         console.error('Error searching users:', error);
+        this.isSearching = false;
       }
     });
   }
 
-  addContact(user: User): void {
-    this.userService.addContact(user.authServerUserId).subscribe({
-      next: (contact) => {
-        this.contacts.push(contact);
-        this.searchResults = this.searchResults.filter(u => u.authServerUserId !== user.authServerUserId);
-        this.selectContact(contact);
+  sendConnectionRequest(userId: string): void {
+    this.connectionService.sendConnectionRequest(userId).subscribe({
+      next: () => {
+        // Remove user from search results
+        this.searchResults = this.searchResults.filter(user => user.id !== userId);
       },
       error: (error) => {
-        console.error('Error adding contact:', error);
+        console.error('Error sending connection request:', error);
       }
     });
   }
 
-  // Message methods
-  loadMessages(conversationId: string): void {
-    this.isLoadingMessages = true;
-    this.currentPage = 0;
-    this.messages = [];
+  // Contacts methods
+  loadContacts(): void {
+    this.isLoadingContacts = true;
+    this.connectionService.getMyConnections().subscribe({
+      next: (contacts) => {
+        this.contacts = contacts;
+        this.isLoadingContacts = false;
+      },
+      error: (error) => {
+        console.error('Error loading contacts:', error);
+        this.isLoadingContacts = false;
+      }
+    });
+  }
 
-    this.messageService.getMessagesForConversation(conversationId).pipe(
-      finalize(() => this.isLoadingMessages = false)
-    ).subscribe({
+  selectContact(contact: User): void {
+    this.selectedContact = contact;
+    this.loadMessages();
+  }
+
+  // Connection requests methods
+  loadPendingRequests(): void {
+    this.isLoadingRequests = true;
+    this.connectionService.getPendingConnectionRequests().subscribe({
+      next: (requests) => {
+        this.pendingRequests = requests;
+        this.isLoadingRequests = false;
+      },
+      error: (error) => {
+        console.error('Error loading pending requests:', error);
+        this.isLoadingRequests = false;
+      }
+    });
+  }
+
+  acceptConnectionRequest(requestId: string): void {
+    this.connectionService.acceptConnectionRequest(requestId).subscribe({
+      next: () => {
+        // Remove request from pending list
+        this.pendingRequests = this.pendingRequests.filter(req => req.id !== requestId);
+        // Reload contacts
+        this.loadContacts();
+      },
+      error: (error) => {
+        console.error('Error accepting connection request:', error);
+      }
+    });
+  }
+
+  rejectConnectionRequest(requestId: string): void {
+    this.connectionService.rejectConnectionRequest(requestId).subscribe({
+      next: () => {
+        // Remove request from pending list
+        this.pendingRequests = this.pendingRequests.filter(req => req.id !== requestId);
+      },
+      error: (error) => {
+        console.error('Error rejecting connection request:', error);
+      }
+    });
+  }
+
+  // Chat methods
+  loadMessages(): void {
+    if (!this.selectedContact) return;
+
+    this.isLoadingMessages = true;
+    // In a real app, you would need to get or create a conversation ID
+    const conversationId = this.selectedContact.id; // Simplified for now
+
+    this.messageService.getConversationMessages(conversationId, this.currentPage).subscribe({
       next: (response) => {
         this.messages = response.content;
-        this.totalPages = response.totalPages;
-        this.scrollToBottom();
+        this.totalMessages = response.totalElements;
+        this.isLoadingMessages = false;
       },
       error: (error) => {
         console.error('Error loading messages:', error);
-      }
-    });
-  }
-
-  loadMoreMessages(): void {
-    if (this.currentPage >= this.totalPages - 1 || !this.selectedContact) {
-      return;
-    }
-
-    this.isLoadingMessages = true;
-    this.currentPage++;
-
-    this.messageService.getMessagesForConversation(
-      this.selectedContact.conversationId,
-      this.currentPage
-    ).pipe(
-      finalize(() => this.isLoadingMessages = false)
-    ).subscribe({
-      next: (response) => {
-        this.messages = [...this.messages, ...response.content];
-      },
-      error: (error) => {
-        console.error('Error loading more messages:', error);
-        this.currentPage--;
+        this.isLoadingMessages = false;
       }
     });
   }
 
   sendMessage(): void {
-    if (!this.newMessage.trim() || !this.selectedContact || !this.currentUser) {
-      return;
-    }
+    if (!this.selectedContact || !this.newMessage.trim()) return;
 
-    this.messageService.sendMessage(
-      this.selectedContact.conversationId,
-      this.selectedContact.contact.authServerUserId,
-      this.newMessage
-    ).subscribe({
-      next: (message) => {
-        this.messages.unshift(message);
+    const message = {
+      receiverId: this.selectedContact.id,
+      content: this.newMessage.trim()
+    };
+
+    this.messageService.sendMessage(message).subscribe({
+      next: (sentMessage) => {
+        this.messages.push(sentMessage);
         this.newMessage = '';
-        this.scrollToBottom();
       },
       error: (error) => {
         console.error('Error sending message:', error);
@@ -170,21 +207,8 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  // Helper methods
-  getContactName(userId: string): string {
-    if (!this.selectedContact) {
-      return '';
-    }
-    return userId === this.currentUser?.authServerUserId
-      ? 'You'
-      : `${this.selectedContact.contact.firstName} ${this.selectedContact.contact.lastName}`;
-  }
-
-  private scrollToBottom(): void {
-    setTimeout(() => {
-      if (this.messagesContainer) {
-        this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
-      }
-    }, 100);
+  loadMoreMessages(): void {
+    this.currentPage++;
+    this.loadMessages();
   }
 }
