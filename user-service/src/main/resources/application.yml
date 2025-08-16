@@ -7,9 +7,9 @@ spring:
   config:
     import: "optional:configserver:http://configserver:8060/"
   datasource:
-    url: jdbc:postgresql://postgres:5432/${USER_SERVICE_DB_NAME:user_service}
-    username: ${POSTGRES_USERNAME:postgres}
-    password: ${POSTGRES_PASSWORD:postgres}
+    url: jdbc:postgresql://postgres:5432/${USER_SERVICE_DB_NAME}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
