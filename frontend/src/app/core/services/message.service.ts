@@ -16,8 +16,13 @@ export class MessageService {
    * Send a message to another user
    */
   sendMessage(message: SendMessageRequest): Observable<Message> {
-    return this.http.post<Message>(this.apiUrl, message);
-  }
+    const payload: any = {
+    recipientId: (message as any).receiverId, // map FE field to BE contract
+    content: message.content,
+    ...(message.conversationId ? { conversationId: message.conversationId } : {})
+    };
+    return this.http.post<Message>(this.apiUrl, payload);
+    }
 
   /**
    * Get messages for a conversation

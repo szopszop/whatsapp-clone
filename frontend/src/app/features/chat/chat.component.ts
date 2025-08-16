@@ -39,7 +39,7 @@ import { Message } from '../../core/models/message.model';
     MatSnackBarModule
   ],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss'
+  styleUrls: ['./chat.component.scss']
 })
 export class ChatComponent implements OnInit {
   // User search
@@ -74,7 +74,6 @@ export class ChatComponent implements OnInit {
     this.loadPendingRequests();
   }
 
-  // User search methods
   searchUsers(): void {
     if (!this.searchQuery.trim()) {
       this.searchResults = [];
@@ -97,7 +96,6 @@ export class ChatComponent implements OnInit {
   sendConnectionRequest(userId: string): void {
     this.connectionService.sendConnectionRequest(userId).subscribe({
       next: () => {
-        // Remove user from search results
         this.searchResults = this.searchResults.filter(user => user.id !== userId);
       },
       error: (error) => {
@@ -106,7 +104,6 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  // Contacts methods
   loadContacts(): void {
     this.isLoadingContacts = true;
     this.connectionService.getMyConnections().subscribe({
@@ -123,10 +120,10 @@ export class ChatComponent implements OnInit {
 
   selectContact(contact: User): void {
     this.selectedContact = contact;
+    this.currentPage = 0;
     this.loadMessages();
   }
 
-  // Connection requests methods
   loadPendingRequests(): void {
     this.isLoadingRequests = true;
     this.connectionService.getPendingConnectionRequests().subscribe({
@@ -144,9 +141,7 @@ export class ChatComponent implements OnInit {
   acceptConnectionRequest(requestId: string): void {
     this.connectionService.acceptConnectionRequest(requestId).subscribe({
       next: () => {
-        // Remove request from pending list
         this.pendingRequests = this.pendingRequests.filter(req => req.id !== requestId);
-        // Reload contacts
         this.loadContacts();
       },
       error: (error) => {
@@ -158,7 +153,6 @@ export class ChatComponent implements OnInit {
   rejectConnectionRequest(requestId: string): void {
     this.connectionService.rejectConnectionRequest(requestId).subscribe({
       next: () => {
-        // Remove request from pending list
         this.pendingRequests = this.pendingRequests.filter(req => req.id !== requestId);
       },
       error: (error) => {
@@ -172,7 +166,6 @@ export class ChatComponent implements OnInit {
     if (!this.selectedContact) return;
 
     this.isLoadingMessages = true;
-    // In a real app, you would need to get or create a conversation ID
     const conversationId = this.selectedContact.id; // Simplified for now
 
     this.messageService.getConversationMessages(conversationId, this.currentPage).subscribe({
@@ -192,7 +185,7 @@ export class ChatComponent implements OnInit {
     if (!this.selectedContact || !this.newMessage.trim()) return;
 
     const message = {
-      receiverId: this.selectedContact.id,
+      recipientId: this.selectedContact.id,
       content: this.newMessage.trim()
     };
 

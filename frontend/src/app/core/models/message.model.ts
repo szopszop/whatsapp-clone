@@ -1,7 +1,7 @@
 export interface Message {
   id: string;
   senderId: string;
-  receiverId: string;
+  recipientId: string;
   conversationId: string;
   content: string;
   timestamp: string;
@@ -10,7 +10,7 @@ export interface Message {
 }
 
 export interface SendMessageRequest {
-  receiverId: string;
+  recipientId: string;
   content: string;
   conversationId?: string;
 }
