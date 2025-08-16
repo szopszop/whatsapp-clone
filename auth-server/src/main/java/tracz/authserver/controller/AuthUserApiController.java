@@ -15,11 +15,12 @@ import tracz.authserver.dto.*;
 import tracz.authserver.dto.AuthUserDTO;
 import tracz.authserver.dto.RegisterRequest;
 import tracz.authserver.service.AuthUserService;
+import java.util.UUID;
 
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @RestController
-public class RegisterApiController {
+public class AuthUserApiController {
 
     private final AuthUserService authUserService;
 
@@ -39,5 +40,11 @@ public class RegisterApiController {
     public ResponseEntity<?> handleRegistration(@Valid @RequestBody RegisterRequest request) {
         AuthUserDTO registeredUser = authUserService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
+    }
+
+    @DeleteMapping("{authUserId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID authUserId) {
+        authUserService.deleteUser(authUserId);
+        return ResponseEntity.noContent().build();
     }
 }

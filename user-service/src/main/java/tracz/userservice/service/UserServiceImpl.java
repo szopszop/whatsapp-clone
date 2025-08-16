@@ -1,7 +1,6 @@
 package tracz.userservice.service;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +8,6 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import tracz.userservice.dto.*;
 import tracz.userservice.entity.User;
-import tracz.userservice.entity.UserStatus;
 import tracz.userservice.exception.ResourceNotFoundException;
 import tracz.userservice.exception.UserAlreadyExistsException;
 import tracz.userservice.mapper.UserMapper;
@@ -22,6 +20,8 @@ import tracz.userservice.config.ExceptionMessages;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserEventPublisher userEventPublisher; // Wstrzyknięty publisher
+
 
     @Override
     public UserResponseDTO findByAuthServerUserId(UUID id) {
@@ -94,13 +94,32 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUserStatus(UUID authUserId, UserStatusUpdateDTO statusUpdateDTO) {
         User user = findUserByAuthIdOrThrow(authUserId);
-        try {
-            user.setStatus(UserStatus.valueOf(statusUpdateDTO.status()));
-        }catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + statusUpdateDTO.status());
-        }
+        user.setStatus(User.UserStatus.valueOf(statusUpdateDTO.status()));
         userRepository.save(user);
         log.info("Status for user {} updated to {}.", user.getEmail(), statusUpdateDTO.status());
+
+        userEventPublisher.publishUserStatusUpdated(
+                new UserStatusUpdatedEvent(authUserId, statusUpdateDTO.status())
+        );
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserByAuthId(UUID authUserId) {
+        User user = findUserByAuthIdOrThrow(authUserId);
+        userRepository.delete(user);
+        log.info("User with email {} (authId: {}) deleted successfully from user-service.",
+                user.getEmail(), authUserId);
+    }
+
+    @Override
+    public void addFcmToken(UUID userId, String token) {
+
+    }
+
+    @Override
+    public Set<String> getFcmTokens(UUID userId) {
+        return Set.of();
     }
 
     private User findUserByAuthIdOrThrow(UUID authId) {

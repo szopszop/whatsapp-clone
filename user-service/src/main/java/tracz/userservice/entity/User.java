@@ -41,15 +41,16 @@ public class User extends BaseEntity {
     @Builder.Default
     private UserStatus status = UserStatus.OFFLINE;
 
-    public String getFullName() {
-        if (firstName != null && lastName != null) {
-            return firstName + " " + lastName;
-        } else if (firstName != null) {
-            return firstName;
-        } else if (lastName != null) {
-            return lastName;
-        }
-        return "";
+    public enum UserStatus {
+        ONLINE, OFFLINE, AWAY, BUSY
     }
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_fcm_tokens", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "fcm_token")
+    private Set<String> fcmTokens = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Contact> contacts = new ArrayList<>();
 }

@@ -1,26 +1,43 @@
+
 global:
-  scrape_interval:     5s # Set the scrape interval to every 5 seconds.
-  evaluation_interval: 5s # Evaluate rules every 5 seconds.
+  scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'auth-server'
-    metrics_path: '/actuator/prometheus'
+  - job_name: 'prometheus'
     static_configs:
-      - targets: [ 'auth-server:8090' ]
-  - job_name: 'user-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: [ 'user-service:8080' ]
-  - job_name: 'gatewayserver'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: [ 'gatewayserver:8050' ]
-  - job_name: 'eurekaserver'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: [ 'eurekaserver:8070' ]
+      - targets: ['localhost:9090']
+
   - job_name: 'configserver'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 'configserver:8060' ]
-  
+      - targets: ['configserver:8060']
+
+  - job_name: 'eurekaserver'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['eurekaserver:8070']
+
+  - job_name: 'auth-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-server:8090']
+
+  - job_name: 'user-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['user-service:8080']
+
+  - job_name: 'message-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['message-service:9010']
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['notification-service:9020']
+
+  - job_name: 'gatewayserver'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gatewayserver:8050']

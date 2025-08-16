@@ -3,7 +3,7 @@
 A WhatsApp-style chat system using Spring Boot, WebFlux, RabbitMQ, and MongoDB. It supports JWT-based authentication, WebSockets for real-time messaging, and push notifications via Firebase (FCM).
 Covered with **Unit Tests** and **Integration Tests** using **Test Containers**.
 
-![image](https://github.com/szopszop/whatsapp-clone/blob/main/architektura%20(1).png)
+![image](https://github.com/szopszop/whatsapp-clone/blob/main/architektura.png)
 
 
 
@@ -53,3 +53,44 @@ https://github.com/szopszop/whatsapp-clone-config
 - WebSockets for live chat experience  
 - Test Containers for integration testing  
 - RabbitMQ for event-driven comms between services  
+
+---
+
+## Deployment Options
+
+### Local Development with Docker Compose
+
+For local development, you can use Docker Compose:
+
+1. Make sure you have the `.env` file in the root directory with all required environment variables:
+   - Database credentials (POSTGRES_USERNAME, POSTGRES_PASSWORD)
+   - Service database names (AUTH_SERVER_DB_NAME, USER_SERVICE_DB_NAME, MESSAGE_SERVICE_DB_NAME)
+   - MongoDB credentials (MONGO_DB_USER, MONGO_DB_PASSWORD)
+   - RabbitMQ credentials (RABBITMQ_USER, RABBITMQ_PASSWORD)
+   - JWT secrets and other configuration
+
+2. Run the application using Docker Compose:
+   ```bash
+   docker-compose -f docker-compose/docker-compose.yml up -d
+   ```
+
+3. Access the services:
+   - Frontend: http://localhost:4200
+   - API Gateway: http://localhost:8050
+   - Auth Server: http://localhost:8090
+   - Grafana Dashboard: http://localhost:3000
+
+4. To stop the application:
+   ```bash
+   docker-compose -f docker-compose/docker-compose.yml down
+   ```
+
+### Cloud Deployment with Kubernetes
+
+The application can be automatically deployed to Google Kubernetes Engine (GKE) using GitHub Actions:
+
+1. Push changes to the main branch
+2. GitHub Actions workflow builds Docker images and pushes them to Google Container Registry
+3. Kubernetes manifests are applied to deploy the application to GKE
+
+For detailed instructions on setting up GCP deployment, see the [Kubernetes Deployment README](k8s/README.md).

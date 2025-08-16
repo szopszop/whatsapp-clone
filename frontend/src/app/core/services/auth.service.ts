@@ -28,7 +28,6 @@ export class AuthService {
     private http: HttpClient,
     private ngZone: NgZone,
     private toastr: ToastrService
-    private ngZone: NgZone
 
   ) {
     this.isAdmin$ = this.userProfile$.pipe(
@@ -115,6 +114,6 @@ export class AuthService {
   }
 
   registerApi(registerRequest: RegisterRequest): Observable<any> {
-    return this.http.post(`${environment.authServerUrl}/api/auth/register`, registerRequest);
+    return this.http.post(`${environment.AUTH_SERVER_URL}/api/v1/auth/register`, registerRequest);
   }
 }

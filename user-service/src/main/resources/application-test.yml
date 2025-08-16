@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: user-service
+  config:
+    import: "optional:configserver:http://configserver:8060/"
   datasource:
     url: jdbc:postgresql://localhost:5430/${USER_SERVICE_DB_NAME}
     username: ${POSTGRES_USERNAME}
@@ -27,14 +29,21 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
     schemas: public
+    clean-disabled: false
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: guest
+    password: guest
 
 eureka:
   client:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8070/eureka/
-
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: user-service
 
 #Eureka dashboard
 info:

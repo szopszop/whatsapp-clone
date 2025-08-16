@@ -26,24 +26,35 @@ public class OAuth2ClientConfig {
     @Value("${auth-server.internal.client-secret}")
     private String internalClientSecret;
 
+    @Value("${auth-server.internal.user-service.client-secret}")
+    private String userServiceClientSecret;
+
+    @Value("${auth-server.internal.message-service.client-secret}")
+    private String messageServiceClientSecret;
+
+    @Value("${auth-server.internal.notification-service.client-secret}")
+    private String notificationServiceClientSecret;
+
     private final PasswordEncoder passwordEncoder;
 
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
         JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
 
-        RegisteredClient angularClient = createAngularClient();
-
-        RegisteredClient internalClient = createInternalClient();
-
-        if (repository.findByClientId("oidc-client") == null) {
-            repository.save(angularClient);
-        }
-        if (repository.findByClientId("auth-server-internal") == null) {
-            repository.save(internalClient);
-        }
+        saveClientIfNotExists(repository, createAngularClient());
+        saveClientIfNotExists(repository, createInternalClient());
+        saveClientIfNotExists(repository, createUserServiceClient());
+        saveClientIfNotExists(repository, createMessageServiceClient());
+        saveClientIfNotExists(repository, createNotificationServiceClient());
 
         return repository;
+    }
+
+    private void saveClientIfNotExists(RegisteredClientRepository repository, RegisteredClient client) {
+        if (repository.findByClientId(client.getClientId()) == null) {
+            repository.save(client);
+            log.info("Registered new OAuth2 client: {}", client.getClientId());
+        }
     }
 
     @Bean
@@ -93,13 +104,50 @@ public class OAuth2ClientConfig {
                 .clientName("Auth Server Internal Client")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .scope("internal.user.read")
+                .scope("internal.user.write")
                 .clientSettings(ClientSettings.builder()
                         .requireAuthorizationConsent(false)
                         .build())
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofHours(1))
-                        .build())
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofHours(1)).build())
+                .build();
+    }
+
+    private RegisteredClient createUserServiceClient() {
+        return RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("user-service")
+                .clientName("User Service M2M Client")
+                .clientSecret(passwordEncoder.encode(userServiceClientSecret))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("internal.user.write")
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofHours(1)).build())
+                .build();
+    }
+
+    private RegisteredClient createMessageServiceClient() {
+        return RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("message-service")
+                .clientName("Message Service M2M Client")
+                .clientSecret(passwordEncoder.encode(messageServiceClientSecret))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("internal.user.write")
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofHours(1)).build())
+                .build();
+    }
+
+    private RegisteredClient createNotificationServiceClient() {
+        return RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("notification-service")
+                .clientName("Notification Service M2M Client")
+                .clientSecret(passwordEncoder.encode(notificationServiceClientSecret))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("internal.user.write")
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofHours(1)).build())
                 .build();
     }
 }

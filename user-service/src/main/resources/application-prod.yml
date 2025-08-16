@@ -1,0 +1,87 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: user-service
+  config:
+    import: "optional:configserver:http://configserver:8060/"
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${USER_SERVICE_DB_NAME}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    schemas: public
+    clean-disabled: false
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: user-service
+
+#Eureka dashboard
+info:
+  app:
+    name: "user-service"
+    description: "User service app (Production Profile)"
+    version: "1.0.0"
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    tracz:
+      userservice: INFO
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

@@ -1,0 +1,60 @@
+server:
+  port: 8060
+
+spring:
+  application:
+    name: configserver
+  profiles:
+    active: git
+  cloud:
+    config:
+      server:
+        git:
+          uri: "https://github.com/szopszop/whatsapp-clone-config.git"
+          default-label: main
+          timeout: 5
+          clone-on-start: true
+          force-pull: true
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: configserver
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    tracz:
+      configserver: INFO
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

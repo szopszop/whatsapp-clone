@@ -1,0 +1,162 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: auth-server
+  config:
+    import: "optional:configserver:http://configserver:8060/"
+  datasource:
+    url: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    clean-disabled: true
+    out-of-order: true
+    placeholders:
+      auth_server_internal_secret: "${AUTH_SERVER_INTERNAL_SECRET}"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid,profile,email
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+            user-name-attribute: email
+  cache:
+    type: redis
+    cache-names:
+      - buckets
+    redis:
+      time-to-live: 600000
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+auth-server:
+  internal:
+    client-secret: ${AUTH_SERVER_INTERNAL_SECRET}
+    user-service:
+      client-secret: ${USER_SERVICE_CLIENT_SECRET}
+    message-service:
+      client-secret: ${MESSAGE_SERVICE_CLIENT_SECRET}
+    notification-service:
+      client-secret: ${NOTIFICATION_SERVICE_CLIENT_SECRET}
+  jwk:
+    keystore-path: "classpath:jwk.jks"
+    keystore-password: ${KEYSTORE_PASSWORD}
+    key-alias: "jwk-key"
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 2
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+
+resilience4j.retry:
+  configs:
+    default:
+      maxAttempts: 3
+      waitDuration: 500
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - java.util.concurrent.TimeoutException
+
+resilience4j.ratelimiter:
+  configs:
+    default:
+      timeoutDuration: 1000
+      limitRefreshPeriod: 1000
+      limitForPeriod: 2
+
+#Eureka dashboard
+info:
+  app:
+    name: auth-server
+    description: "Auth server app (Production Profile)"
+    version: "1.0.0"
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
+  angular:
+    url: ${ANGULAR_URL}
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: auth-server
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    tracz.authserver: INFO
+    org.springframework.security: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.boot.autoconfigure: WARN
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+#OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

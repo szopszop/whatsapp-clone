@@ -1,11 +1,8 @@
--- V1__Create_Users_Table.sql
--- Create users table for User Service
-
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE users (
-                       id varchar(36) NOT NULL,
-                       auth_server_user_id varchar(36) NOT NULL UNIQUE,
+                       id UUID NOT NULL,
+                       auth_server_user_id UUID NOT NULL UNIQUE,
                        email varchar(100) NOT NULL UNIQUE,
                        first_name varchar(255),
                        last_name varchar(255),
@@ -18,7 +15,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE user_roles (
-                            user_id varchar(36) NOT NULL,
+                            user_id UUID NOT NULL,
                             role_name varchar(100) NOT NULL,
                             PRIMARY KEY (user_id, role_name),
                             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

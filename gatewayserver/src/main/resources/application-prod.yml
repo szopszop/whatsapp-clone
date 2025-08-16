@@ -1,0 +1,83 @@
+server:
+  port: 8072
+
+spring:
+  application:
+    name: gatewayserver
+  config:
+    import: "optional:configserver:http://configserver:8060/"
+  cloud:
+    gateway:
+      routes:
+        - id: user-service-route
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+      discovery:
+        locator:
+          enabled: false
+          lowerCaseServiceId: true
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 10s
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+  data:
+    redis:
+      connect-timeout: 2s
+      host: gateway-redis
+      port: 6379
+      timeout: 1s
+
+eureka:
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: gatewayserver
+
+#Actuator
+management:
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    metrics:
+      access: read_only
+    prometheus:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# for Eureka dashboard
+info:
+  app:
+    name: "gatewayserver"
+    description: "Gateway server app (Production Profile)"
+    version: "1.0.0"
+
+logging:
+  level:
+    root: INFO
+    tracz:
+      gatewayserver: INFO
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

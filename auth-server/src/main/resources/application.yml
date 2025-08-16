@@ -26,18 +26,43 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${ISSUER_URI:http://auth-server:8090}
+          issuer-uri: http://localhost:8090
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid,profile,email
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+            user-name-attribute: email
   cache:
     type: redis
     cache-names:
       - buckets
     redis:
       time-to-live: 600000
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:rabbitmq}
+    port: 5672
+    username: guest
+    password: guest
+
 
 
 auth-server:
   internal:
     client-secret: ${AUTH_SERVER_INTERNAL_SECRET}
+    user-service:
+      client-secret: ${USER_SERVICE_CLIENT_SECRET}
+    message-service:
+      client-secret: ${MESSAGE_SERVICE_CLIENT_SECRET}
+    notification-service:
+      client-secret: ${NOTIFICATION_SERVICE_CLIENT_SECRET}
   jwk:
     keystore-path: "classpath:jwk.jks"
     keystore-password: ${KEYSTORE_PASSWORD}
@@ -73,18 +98,22 @@ resilience4j.ratelimiter:
 #Eureka dashboard
 info:
   app:
-    name: "auth-server"
+    name: auth-server
     description: "Auth server app"
     version: "1.0.0"
   cors:
     allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
+  angular:
+    url: ${ANGULAR_URL:http://localhost:4200}
 
 eureka:
   client:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8070/eureka/
+      defaultZone: ${EUREKA_SERVER_ADDRESS:http://eurekaserver:8070/eureka}
+  instance:
+    hostname: auth-server
 
 
 #Actuator
@@ -116,8 +145,13 @@ management:
 
 logging:
   level:
-    tracz:
-      authserver: debug
+    root: INFO
+    tracz.authserver: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.boot.autoconfigure: WARN
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 

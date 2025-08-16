@@ -1,28 +1,45 @@
 services:
   gateway-redis:
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
     image: redis
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       timeout: 10s
       retries: 10
+    networks:
+      - szopnet
   auth-server-redis:
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
     image: redis
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       timeout: 10s
       retries: 10
-
+    networks:
+      - szopnet
+    ports:
+      - "6379:6379"
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_COOKIE_VALUE}
+    networks:
+      - szopnet
 
   auth-server-db:
     extends:
       file: common-config.yml
-      service: microservice-db-config
+      service: microservice-db-postgres-config
     container_name: auth-server-db
     environment:
       POSTGRES_DB: ${AUTH_SERVER_DB_NAME}
@@ -30,23 +47,31 @@ services:
   user-service-db:
     extends:
       file: common-config.yml
-      service: microservice-db-config
+      service: microservice-db-postgres-config
     container_name: user-service-db
     environment:
       POSTGRES_DB: ${USER_SERVICE_DB_NAME}
 
   message-service-db:
-    extends:
-      file: common-config.yml
-      service: microservice-db-config
+    image: mongo:latest
     container_name: message-service-db
     environment:
-      POSTGRES_DB: ${MESSAGE_SERVICE_DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MESSAGE_SERVICE_DB_NAME}
+    volumes:
+      - ./mongo-data:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - szopnet
 
   configserver:
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
     image: "szopszop/configserver"
     container_name: configserver
     healthcheck:
@@ -57,11 +82,14 @@ services:
       start_period: 5s
     environment:
       OTEL_SERVICE_NAME: "configserver"
-      
+    networks:
+      - szopnet
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+
   eurekaserver:
-    extends:
-      file: common-config.yml
-      service: microservice-configserver-config
     image: "szopszop/eurekaserver"
     container_name: eurekaserver
     depends_on:
@@ -74,8 +102,15 @@ services:
       retries: 10
       start_period: 5s
     environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8060/
       SPRING_APPLICATION_NAME: "eurekaserver"
       OTEL_SERVICE_NAME: "eurekaserver"
+    networks:
+      - szopnet
+    deploy:
+      resources:
+        limits:
+          memory: 700m
 
   auth-server:
     extends:
@@ -101,8 +136,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-server-db:5432/${AUTH_SERVER_DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
       OTEL_SERVICE_NAME: auth-server
-
-
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTH_SERVER_INTERNAL_SECRET: ${AUTH_SERVER_INTERNAL_SECRET}
+      USER_SERVICE_CLIENT_SECRET: ${USER_SERVICE_CLIENT_SECRET}
+      MESSAGE_SERVICE_CLIENT_SECRET: ${MESSAGE_SERVICE_CLIENT_SECRET}
+      NOTIFICATION_SERVICE_CLIENT_SECRET: ${NOTIFICATION_SERVICE_CLIENT_SECRET}
+      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
 
   user-service:
     extends:
@@ -127,6 +167,12 @@ services:
       SPRING_APPLICATION_NAME: user-service
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/${USER_SERVICE_DB_NAME}
       OTEL_SERVICE_NAME: user-service
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_FLYWAY_CLEAN_ON_VALIDATION_ERROR: "true"
+      SPRING_FLYWAY_CLEAN_DISABLED: "false"
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
 
   message-service:
     extends:
@@ -139,18 +185,46 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       auth-server:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9010/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 10s
     environment:
       SPRING_APPLICATION_NAME: message-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://message-service-db:5432/${MESSAGE_SERVICE_DB_NAME}
+      MONGO_DB_URI: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@message-service-db:27017/${MESSAGE_SERVICE_DB_NAME}?authSource=admin
       OTEL_SERVICE_NAME: message-service
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://auth-server:8090
+
+  notification-service:
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
+    image: "szopszop/notification-service"
+    container_name: notification-service
+    depends_on:
+      eurekaserver:
+        condition: service_healthy
+      auth-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9020/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      SPRING_APPLICATION_NAME: notification-service
+      OTEL_SERVICE_NAME: notification-service
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://auth-server:8090
+      SPRING_CONFIG_IMPORT: optional:configserver:http://configserver:8060/
 
   gatewayserver:
     extends:
@@ -162,6 +236,10 @@ services:
       auth-server:
         condition: service_healthy
       user-service:
+        condition: service_healthy
+      message-service:
+        condition: service_healthy
+      notification-service:
         condition: service_healthy
       gateway-redis:
         condition: service_healthy
@@ -180,75 +258,6 @@ services:
   ###############################################
 # Observability
 
-  read:
-    image: grafana/loki:3.1.2
-    command: "-config.file=/etc/loki/config.yaml -target=read"
-    volumes:
-      - ./observability/loki/loki-config.yaml:/etc/loki/config.yaml
-    depends_on:
-      - minio
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks: &loki-dns
-      szopnet:
-        aliases:
-          - loki
-
-  write:
-    image: grafana/loki:3.1.2
-    command: "-config.file=/etc/loki/config.yaml -target=write"
-    volumes:
-      - ./observability/loki/loki-config.yaml:/etc/loki/config.yaml
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      - minio
-    networks:
-      <<: *loki-dns
-
-  alloy:
-    image: grafana/alloy:v1.5.1
-    volumes:
-      - ./observability/alloy/alloy-local-config.yaml:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    depends_on:
-      - gateway
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
-
-  minio:
-    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        mkdir -p /data/loki-data && \
-        mkdir -p /data/loki-ruler && \
-        minio server /data
-    environment:
-      - MINIO_ROOT_USER=loki
-      - MINIO_ROOT_PASSWORD=supersecret
-      - MINIO_PROMETHEUS_AUTH_TYPE=public
-      - MINIO_UPDATE=off
-    volumes:
-      - ./.data/minio:/data
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 15s
-      timeout: 20s
-      retries: 5
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
-
   prometheus:
     image: prom/prometheus:v3.1.0
     container_name: prometheus
@@ -256,19 +265,8 @@ services:
       - "9090:9090"
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
-
-  tempo:
-    image: grafana/tempo:2.6.1
-    container_name: tempo
-    command: -config.file /etc/tempo-config.yml
-    volumes:
-      - ./observability/tempo/tempo.yml:/etc/tempo-config.yml
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
+    networks:
+      - szopnet
 
   grafana:
     image: grafana/grafana:11.4.0
@@ -276,13 +274,6 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    depends_on:
-      - gateway
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        /run.sh
     ports:
       - "3000:3000"
     volumes:
@@ -292,91 +283,28 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
+    networks:
+      - szopnet
 
-  backend:
-    image: grafana/loki:3.1.2
-    volumes:
-      - ./observability/loki/loki-config.yaml:/etc/loki/config.yaml
-    command: "-config.file=/etc/loki/config.yaml -target=backend -legacy-read-mode=false"
-    depends_on:
-      - gateway
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
-
-  gateway:
-    image: nginx:1.27.3
-    depends_on:
-      - read
-      - write
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        cat <<EOF > /etc/nginx/nginx.conf
-        user  nginx;
-        worker_processes  5;  ## Default: 1
-
-        events {
-          worker_connections   1000;
-        }
-
-        http {
-          resolver 127.0.0.11;
-
-          server {
-            listen             3100;
-
-            location = / {
-              return 200 'OK';
-              auth_basic off;
-            }
-
-            location = /api/prom/push {
-              proxy_pass       http://write:3100\$$request_uri;
-            }
-
-            location = /api/prom/tail {
-              proxy_pass       http://read:3100\$$request_uri;
-              proxy_set_header Upgrade \$$http_upgrade;
-              proxy_set_header Connection "upgrade";
-            }
-
-            location ~ /api/prom/.* {
-              proxy_pass       http://read:3100\$$request_uri;
-            }
-
-            location = /loki/api/v1/push {
-              proxy_pass       http://write:3100\$$request_uri;
-            }
-
-            location = /loki/api/v1/tail {
-              proxy_pass       http://read:3100\$$request_uri;
-              proxy_set_header Upgrade \$$http_upgrade;
-              proxy_set_header Connection "upgrade";
-            }
-
-            location ~ /loki/api/.* {
-              proxy_pass       http://read:3100\$$request_uri;
-            }
-          }
-        }
-        EOF
-        /docker-entrypoint.sh nginx -g "daemon off;"
+  frontend:
+    build:
+      context: ../frontend
+    container_name: frontend
     ports:
-      - "3100:3100"
-    healthcheck:
-      test: [ "CMD", "service", "nginx", "status" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    extends:
-      file: common-config.yml
-      service: network-deploy-service
-
+      - "4200:80"
+    depends_on:
+      gatewayserver:
+        condition: service_healthy
+      auth-server:
+        condition: service_healthy
+      grafana:
+        condition: service_healthy
+    environment:
+      - API_URL=http://gatewayserver:8050
+      - AUTH_SERVER_URL=http://auth-server:8090
+      - GRAFANA_URL=http://grafana:3000
+    networks:
+      - szopnet
 
 networks:
   szopnet:

@@ -1,0 +1,171 @@
+.chat-container {
+  display: flex;
+  height: calc(100vh - 64px); /* Adjust based on your header height */
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 350px;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+}
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Contacts, Search, and Requests tabs */
+.contacts-container,
+.search-container,
+.requests-container {
+  padding: 16px;
+  height: calc(100vh - 112px); /* Adjust based on your header and tab height */
+  overflow-y: auto;
+}
+
+.search-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.loading-indicator,
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: #757575;
+}
+
+mat-list-item {
+  cursor: pointer;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  &.selected {
+    background-color: #e3f2fd;
+  }
+}
+
+.request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Chat area */
+.no-chat-selected {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #757575;
+
+  .large-icon {
+    font-size: 64px;
+    height: 64px;
+    width: 64px;
+    margin-bottom: 16px;
+  }
+}
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 16px;
+  }
+
+  .contact-info {
+    h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: #757575;
+    }
+  }
+}
+
+.messages-container {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  max-width: 70%;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  border-radius: 16px;
+
+  &.sent {
+    align-self: flex-end;
+    background-color: #e3f2fd;
+  }
+
+  &.received {
+    align-self: flex-start;
+    background-color: #f5f5f5;
+  }
+
+  .message-content {
+    p {
+      margin: 0;
+      word-break: break-word;
+    }
+
+    .message-time {
+      display: block;
+      font-size: 12px;
+      color: #757575;
+      text-align: right;
+      margin-top: 4px;
+    }
+  }
+}
+
+.message-input {
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+
+  .message-field {
+    width: 100%;
+  }
+}

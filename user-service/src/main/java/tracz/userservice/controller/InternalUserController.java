@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tracz.userservice.dto.*;
 import tracz.userservice.service.UserService;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,6 +42,11 @@ public class InternalUserController {
         log.info("Received request from auth-server for {}, authId: {}", request.email(), request.authUserId());
         UserResponseDTO createdUser = userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+
+    @GetMapping("/{userId}/fcm-tokens")
+    public ResponseEntity<Set<String>> getFcmTokens(@PathVariable UUID userId) {
+        return ResponseEntity.ok(userService.getFcmTokens(userId));
     }
 
 }
