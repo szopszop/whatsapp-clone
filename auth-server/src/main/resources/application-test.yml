@@ -97,7 +97,7 @@ info:
   cors:
     allowed-origins: "http://localhost:3000,http://localhost:4200,https://oauth.pstmn.io"
   angular:
-    url: http://localhost:4200
+    url: ${ANGULAR_URL:http://localhost:4200}
 
 eureka:
   client:

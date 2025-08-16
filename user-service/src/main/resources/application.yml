@@ -8,7 +8,7 @@ spring:
     import: "optional:configserver:http://configserver:8060/"
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:

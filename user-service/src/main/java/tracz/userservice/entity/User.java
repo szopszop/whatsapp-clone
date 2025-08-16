@@ -31,5 +31,25 @@ public class User extends BaseEntity {
 
     private String firstName;
     private String lastName;
+    @Size(max = 255)
+    private String profilePictureUrl;
+    @Size(max = 500)
+    private String about;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private UserStatus status = UserStatus.OFFLINE;
+
+    public String getFullName() {
+        if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        } else if (firstName != null) {
+            return firstName;
+        } else if (lastName != null) {
+            return lastName;
+        }
+        return "";
+    }
 
 }

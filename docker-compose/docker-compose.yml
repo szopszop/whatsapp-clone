@@ -35,6 +35,14 @@ services:
     environment:
       POSTGRES_DB: ${USER_SERVICE_DB_NAME}
 
+  message-service-db:
+    extends:
+      file: common-config.yml
+      service: microservice-db-config
+    container_name: message-service-db
+    environment:
+      POSTGRES_DB: ${MESSAGE_SERVICE_DB_NAME}
+
   configserver:
     extends:
       file: common-config.yml
@@ -119,6 +127,30 @@ services:
       SPRING_APPLICATION_NAME: user-service
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/${USER_SERVICE_DB_NAME}
       OTEL_SERVICE_NAME: user-service
+
+  message-service:
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
+    image: "szopszop/message-service"
+    container_name: message-service
+    depends_on:
+      message-service-db:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+      auth-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      SPRING_APPLICATION_NAME: message-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://message-service-db:5432/${MESSAGE_SERVICE_DB_NAME}
+      OTEL_SERVICE_NAME: message-service
 
   gatewayserver:
     extends:

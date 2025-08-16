@@ -28,7 +28,27 @@ public class UserMapper {
                 user.getRoles(),
                 user.getCreatedAt(),
                 user.getFirstName(),
-                user.getLastName()
+                user.getLastName(),
+                user.getProfilePictureUrl(),
+                user.getAbout()
         );
+    }
+
+    public static void updateFromDto(UserProfileUpdateDTO updateDTO, User userToUpdate) {
+        if (updateDTO == null) {
+            return;
+        }
+        if (updateDTO.firstName() != null) {
+            userToUpdate.setFirstName(updateDTO.firstName());
+        }
+        if (updateDTO.lastName() != null) {
+            userToUpdate.setLastName(updateDTO.lastName());
+        }
+        if (updateDTO.profilePictureUrl() != null) {
+            userToUpdate.setProfilePictureUrl(updateDTO.profilePictureUrl());
+        }
+        if (updateDTO.about() != null) {
+            userToUpdate.setAbout(updateDTO.about());
+        }
     }
 }
