@@ -20,7 +20,7 @@ public class BaseEntity {
     @UuidGenerator
     @GeneratedValue(generator = "UUID")
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
-    @JdbcTypeCode(SqlTypes.CHAR)
+    @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
 
     @CreatedDate
