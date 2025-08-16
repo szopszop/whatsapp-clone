@@ -1,8 +1,0 @@
-{
-  "sandbox": "docker",
-  "summarizeToolOutput": {
-    "run_shell_command": {
-      "tokenBudget": 500
-    }
-  }
-}
