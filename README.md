@@ -80,10 +80,6 @@ For local development, you can use Docker Compose:
    - Auth Server: http://localhost:8090
    - Grafana Dashboard: http://localhost:3000
 
-4. To stop the application:
-   ```bash
-   docker-compose -f docker-compose/docker-compose.yml down
-   ```
 
 ### Cloud Deployment with Kubernetes
 
