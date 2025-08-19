@@ -91,8 +91,8 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/register").permitAll()
-                        .requestMatchers("/css/styles.css", "/webjars/**", "/login", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/api/v1/auth/register", "/login").permitAll()
+                        .requestMatchers("/css/styles.css", "/webjars/**", "/error", "/favicon.ico").permitAll()
                         .requestMatchers("/.well-known/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()

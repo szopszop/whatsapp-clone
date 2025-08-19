@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/contacts")
+@RequestMapping("/api/v1/users/contacts")
 @RequiredArgsConstructor
 public class ContactController {
 
@@ -56,6 +56,15 @@ public class ContactController {
         UUID userId = getAuthUserIdFromJwt(jwt);
         boolean isContact = contactService.isUserContact(userId, contactId);
         return ResponseEntity.ok(isContact);
+    }
+
+    @DeleteMapping("/{contactId}")
+    public ResponseEntity<Void> deleteContact(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID contactId) {
+        UUID userId = getAuthUserIdFromJwt(jwt);
+        contactService.deleteContact(userId, contactId);
+        return ResponseEntity.noContent().build();
     }
 
     /**

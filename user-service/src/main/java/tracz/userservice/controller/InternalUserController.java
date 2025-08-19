@@ -24,7 +24,6 @@ public class InternalUserController {
 
     private final UserService userService;
 
-
     @Operation(summary = "Register a new user",
             description = "Creates a new user account in the user-service and provisions it back to auth-server.")
     @ApiResponses({

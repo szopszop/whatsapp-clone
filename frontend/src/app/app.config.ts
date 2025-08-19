@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       OAuthModule.forRoot({
         resourceServer: {
-          allowedUrls: [environment.gatewayApiUrl, environment.AUTH_SERVER_URL, environment.grafanaUrl],
+          allowedUrls: [environment.gatewayApiUrl, environment.authServerUrl, environment.grafanaUrl],
           sendAccessToken: true,
         },
       })

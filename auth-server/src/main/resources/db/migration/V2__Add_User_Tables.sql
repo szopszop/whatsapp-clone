@@ -2,30 +2,30 @@
 -- User management tables
 
 CREATE TABLE roles (
-                       id varchar(36) NOT NULL,
-                       name varchar(255) NOT NULL UNIQUE,
-                       created_at TIMESTAMP,
-                       created_by varchar(255),
-                       updated_at TIMESTAMP,
-                       updated_by varchar(255),
+                       id uuid NOT NULL,
+                       name varchar(100) NOT NULL UNIQUE,
+                       created_at timestamptz,
+                       created_by varchar(100),
+                       updated_at timestamptz,
+                       updated_by varchar(100),
                        PRIMARY KEY (id)
 );
 
 CREATE TABLE auth_users (
-                            id varchar(36) NOT NULL,
-                            email varchar(255) NOT NULL UNIQUE,
+                            id uuid NOT NULL,
+                            email varchar(100) NOT NULL UNIQUE,
                             password varchar(255) NOT NULL,
-                            created_at TIMESTAMP,
-                            created_by varchar(255),
-                            updated_at TIMESTAMP,
-                            updated_by varchar(255),
+                            created_at timestamptz,
+                            created_by varchar(100),
+                            updated_at timestamptz,
+                            updated_by varchar(100),
                             PRIMARY KEY (id)
 );
 
 -- Junction table for user-role relationship
 CREATE TABLE auth_user_roles (
-                                 user_id varchar(36) NOT NULL,
-                                 role_id varchar(36) NOT NULL,
+                                 user_id uuid NOT NULL,
+                                 role_id uuid NOT NULL,
                                  PRIMARY KEY (user_id, role_id),
                                  FOREIGN KEY (user_id) REFERENCES auth_users(id) ON DELETE CASCADE,
                                  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE

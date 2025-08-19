@@ -82,6 +82,15 @@ public class ContactServiceImpl implements ContactService {
         return ContactMapper.toDto(contact);
     }
 
+    @Override
+    public void deleteContact(UUID userId, UUID contactId) {
+        Contact contact = contactRepository.findByUserAuthServerUserIdAndContactAuthServerUserId(userId, contactId)
+                .orElseThrow(() -> new ResourceNotFoundException("Contact not found"));
+
+        contactRepository.delete(contact);
+        log.info("User {} removed contact {}", userId, contactId);
+    }
+
     private User findUserByAuthIdOrThrow(UUID authId) {
         return userRepository.findByAuthServerUserId(authId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with authId: " + authId));
