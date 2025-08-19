@@ -148,7 +148,7 @@ logging:
   level:
     root: INFO
     tracz.authserver: DEBUG
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: ERROR
