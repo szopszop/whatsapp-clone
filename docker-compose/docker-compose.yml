@@ -7,8 +7,7 @@ services:
       retries: 10
     networks:
       - szopnet
-    ports:
-      - "6379:6379"
+
   auth-server-redis:
     image: redis
     healthcheck:
@@ -17,8 +16,7 @@ services:
       retries: 10
     networks:
       - szopnet
-    ports:
-      - "6379:6379"
+
   rabbitmq:
     image: rabbitmq:4.1-management-alpine
     container_name: rabbitmq

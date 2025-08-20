@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import tracz.authserver.config.TestAuditConfig;
 import tracz.authserver.entity.Role;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static tracz.authserver.config.TestAuditConfig.TEST_USER;
 
+@Transactional
 @DataJpaTest
 @Testcontainers
 @ActiveProfiles({"test", "integration-test"})

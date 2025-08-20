@@ -13,13 +13,8 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import reactor.core.publisher.Mono;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
 
 @SpringBootApplication
 public class GatewayServerApplication {
@@ -51,17 +46,6 @@ public class GatewayServerApplication {
                                         .setFallbackUri("forward:/fallback/user-service")))
                         .uri("lb://USER-SERVICE")
                 )
-                .route("user-contacts-route", p -> p
-                        .path("/api/v1/users/contacts/**")
-                        .filters(f -> f
-                                .requestRateLimiter(c -> c
-                                        .setRateLimiter(authenticatedRateLimiter())
-                                        .setKeyResolver(userKeyResolver()))
-                                .circuitBreaker(c -> c
-                                        .setName("userServiceCircuitBreaker")
-                                        .setFallbackUri("forward:/fallback/user-service")))
-                        .uri("lb://USER-SERVICE")
-                )
 
                 .route("message-service-route", p -> p
                         .path("/api/v1/messages/**")
@@ -84,21 +68,6 @@ public class GatewayServerApplication {
                         .uri("lb:ws://MESSAGE-SERVICE")
                 )
                 .build();
-    }
-
-    @Bean
-    public CorsWebFilter corsWebFilter() {
-        final CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
-        corsConfig.setMaxAge(3600L);
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        corsConfig.addAllowedHeader("*");
-        corsConfig.setAllowCredentials(true);
-
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
-
-        return new CorsWebFilter(source);
     }
 
     @Bean
