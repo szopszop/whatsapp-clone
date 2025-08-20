@@ -11,6 +11,9 @@ CREATE TABLE users (
                        updated_at TIMESTAMP,
                        updated_by varchar(255),
                        version INTEGER NOT NULL DEFAULT 0,
+                       profile_picture_url VARCHAR(255),
+                       about TEXT,
+                       status VARCHAR(50) NOT NULL DEFAULT 'OFFLINE',
                        PRIMARY KEY (id)
 );
 
@@ -26,3 +29,5 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_created_at ON users(created_at);
 CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role_name ON user_roles(role_name);
+CREATE INDEX idx_users_status ON users(status);
+

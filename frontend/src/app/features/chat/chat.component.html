@@ -48,7 +48,7 @@
               <img matListItemAvatar [src]="user.profilePictureUrl || 'assets/default-avatar.png'" alt="Profile picture">
               <div matListItemTitle>{{ user.firstName }} {{ user.lastName }}</div>
               <div matListItemLine>{{ user.email }}</div>
-              <button mat-icon-button color="primary" (click)="sendConnectionRequest(user.id)" matTooltip="Send connection request">
+              <button mat-icon-button color="primary" (click)="sendContactRequest(user.id)" matTooltip="Send contact request">
                 <mat-icon>person_add</mat-icon>
               </button>
             </mat-list-item>
@@ -64,19 +64,19 @@
           </div>
 
           <div *ngIf="!isLoadingRequests && pendingRequests.length === 0" class="empty-state">
-            <p>No pending connection requests</p>
+            <p>No pending contact requests</p>
           </div>
 
           <mat-list *ngIf="!isLoadingRequests && pendingRequests.length > 0">
             <mat-list-item *ngFor="let request of pendingRequests">
               <img matListItemAvatar src="assets/default-avatar.png" alt="Profile picture">
               <div matListItemTitle>{{ request.requesterName }}</div>
-              <div matListItemLine>Sent you a connection request</div>
+              <div matListItemLine>Sent you a contact request</div>
               <div class="request-actions">
-                <button mat-icon-button color="primary" (click)="acceptConnectionRequest(request.id)" matTooltip="Accept">
+                <button mat-icon-button color="primary" (click)="acceptContactRequest(request.id)" matTooltip="Accept">
                   <mat-icon>check</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="rejectConnectionRequest(request.id)" matTooltip="Reject">
+                <button mat-icon-button color="warn" (click)="rejectContactRequest(request.id)" matTooltip="Reject">
                   <mat-icon>close</mat-icon>
                 </button>
               </div>

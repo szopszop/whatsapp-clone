@@ -13,10 +13,10 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from '../../core/services/user.service';
-import { ConnectionService } from '../../core/services/connection.service';
+import { ContactService } from '../../core/services/contact.service';
 import { MessageService } from '../../core/services/message.service';
 import { User } from '../../core/models/user.model';
-import { Connection } from '../../core/models/connection.model';
+import { Contact } from '../../core/models/contact.model';
 import { Message } from '../../core/models/message.model';
 
 @Component({
@@ -51,8 +51,8 @@ export class ChatComponent implements OnInit {
   contacts: User[] = [];
   isLoadingContacts: boolean = false;
 
-  // Connection requests
-  pendingRequests: Connection[] = [];
+  // Contact requests
+  pendingRequests: Contact[] = [];
   isLoadingRequests: boolean = false;
 
   // Chat
@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private connectionService: ConnectionService,
+    private contactService: ContactService,
     private messageService: MessageService
   ) {}
 
@@ -93,20 +93,20 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  sendConnectionRequest(userId: string): void {
-    this.connectionService.sendConnectionRequest(userId).subscribe({
+  sendContactRequest(userId: string): void {
+    this.contactService.sendContactRequest(userId).subscribe({
       next: () => {
         this.searchResults = this.searchResults.filter(user => user.id !== userId);
       },
       error: (error) => {
-        console.error('Error sending connection request:', error);
+        console.error('Error sending contact request:', error);
       }
     });
   }
 
   loadContacts(): void {
     this.isLoadingContacts = true;
-    this.connectionService.getMyConnections().subscribe({
+    this.contactService.getMyContacts().subscribe({
       next: (contacts) => {
         this.contacts = contacts;
         this.isLoadingContacts = false;
@@ -126,7 +126,7 @@ export class ChatComponent implements OnInit {
 
   loadPendingRequests(): void {
     this.isLoadingRequests = true;
-    this.connectionService.getPendingConnectionRequests().subscribe({
+    this.contactService.getPendingContactRequests().subscribe({
       next: (requests) => {
         this.pendingRequests = requests;
         this.isLoadingRequests = false;
@@ -138,25 +138,25 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  acceptConnectionRequest(requestId: string): void {
-    this.connectionService.acceptConnectionRequest(requestId).subscribe({
+  acceptContactRequest(requestId: string): void {
+    this.contactService.acceptContactRequest(requestId).subscribe({
       next: () => {
         this.pendingRequests = this.pendingRequests.filter(req => req.id !== requestId);
         this.loadContacts();
       },
       error: (error) => {
-        console.error('Error accepting connection request:', error);
+        console.error('Error accepting contact request:', error);
       }
     });
   }
 
-  rejectConnectionRequest(requestId: string): void {
-    this.connectionService.rejectConnectionRequest(requestId).subscribe({
+  rejectContactRequest(requestId: string): void {
+    this.contactService.rejectContactRequest(requestId).subscribe({
       next: () => {
         this.pendingRequests = this.pendingRequests.filter(req => req.id !== requestId);
       },
       error: (error) => {
-        console.error('Error rejecting connection request:', error);
+        console.error('Error rejecting contact request:', error);
       }
     });
   }

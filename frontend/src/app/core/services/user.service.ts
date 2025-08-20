@@ -8,7 +8,7 @@ import { User } from '../models/user.model';
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = `${environment.gatewayApiUrl}/api/v1/user`;
+  private apiUrl = `${environment.gatewayApiUrl}/api/v1/users`;
 
   constructor(private http: HttpClient) { }
 

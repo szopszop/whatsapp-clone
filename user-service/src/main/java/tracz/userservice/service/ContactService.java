@@ -41,4 +41,12 @@ public interface ContactService {
      * @return The contact if found.
      */
     ContactResponseDTO getUserContact(UUID userId, UUID contactId);
+
+    /**
+     * Deletes the contact of the current user.
+     *
+     * @param userId The ID of the user.
+     * @param contactId The ID of the potential contact.
+     */
+    void deleteContact(UUID userId, UUID contactId);
 }

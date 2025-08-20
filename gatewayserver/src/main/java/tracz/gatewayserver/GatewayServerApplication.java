@@ -8,14 +8,13 @@ import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
-import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Mono;
 import java.time.Duration;
-import java.util.Map;
 
 @SpringBootApplication
 public class GatewayServerApplication {
@@ -28,25 +27,26 @@ public class GatewayServerApplication {
     public RouteLocator customRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("auth-server-route", p -> p
-                        .path("/auth/**")
+                        .path("/api/v1/auth/**")
                         .filters(f -> f
                             .requestRateLimiter(c -> c
                                 .setRateLimiter(anonymousRateLimiter())
                                 .setKeyResolver(userKeyResolver())))
                         .uri("http://auth-server:8090")
                 )
-                .route("user-service-route", p -> p
+
+                .route("user-profile-route", p -> p
                         .path("/api/v1/users/**")
                         .filters(f -> f
-                            .rewritePath("/api/v1/users/(?<segment>.*)", "/${segment}")
-                            .requestRateLimiter(c -> c
-                                .setRateLimiter(authenticatedRateLimiter())
-                                .setKeyResolver(userKeyResolver()))
-                            .circuitBreaker(c -> c
-                                .setName("userServiceCircuitBreaker")
-                                .setFallbackUri("forward:/fallback/user-service")))
+                                .requestRateLimiter(c -> c
+                                        .setRateLimiter(authenticatedRateLimiter())
+                                        .setKeyResolver(userKeyResolver()))
+                                .circuitBreaker(c -> c
+                                        .setName("userServiceCircuitBreaker")
+                                        .setFallbackUri("forward:/fallback/user-service")))
                         .uri("lb://USER-SERVICE")
                 )
+
                 .route("message-service-route", p -> p
                         .path("/api/v1/messages/**")
                         .filters(f -> f
@@ -67,7 +67,6 @@ public class GatewayServerApplication {
                                 .setKeyResolver(userKeyResolver())))
                         .uri("lb:ws://MESSAGE-SERVICE")
                 )
-
                 .build();
     }
 
@@ -80,7 +79,7 @@ public class GatewayServerApplication {
 
     @Bean
     public RedisRateLimiter authenticatedRateLimiter() {
-        return new RedisRateLimiter(5, 2, 1);
+        return new RedisRateLimiter(5, 5, 1);
     }
 
     @Bean
@@ -88,7 +87,7 @@ public class GatewayServerApplication {
         return new RedisRateLimiter(2, 2, 1);
     }
 
-
+    @Primary
     @Bean
     public RedisRateLimiter redisRateLimiter() {
         return authenticatedRateLimiter();

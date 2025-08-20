@@ -1,9 +1,3 @@
-ALTER TABLE users ADD COLUMN profile_image_url VARCHAR(255);
-ALTER TABLE users ADD COLUMN about TEXT;
-ALTER TABLE users ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'OFFLINE';
-
-CREATE INDEX idx_users_status ON users(status);
-
 CREATE TABLE user_fcm_tokens (
                                  user_id UUID NOT NULL,
                                  fcm_token VARCHAR(255) NOT NULL,
